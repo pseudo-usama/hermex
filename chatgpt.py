@@ -8,14 +8,14 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
-from scraper.config import chatgpt_download_imgs_dir
+from scraper.config import download_dir
 
 
 class ChatGPTScraper:
     def __init__(self, chrome_version=138, headless=False):
         self.chrome_data_dir = Path(os.path.join(os.getcwd(), "chrome-data")).absolute()
         self.chrome_version = chrome_version
-        self.download_dir = chatgpt_download_imgs_dir
+        self.download_dir = download_dir
         self.headless = headless
         self.driver = None
 
