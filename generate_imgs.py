@@ -1,6 +1,6 @@
-from chatgpt import ChatGPTScraper
-from config import download_dir
-from utils import list_and_sort_dir
+from scraper.chatgpt import ChatGPTScraper
+from scraper.config import download_dir
+from scraper.utils import list_and_sort_dir
 
 
 def generate_imgs_with_scraper(initial_prompt, num_frames, initial_url="https://chatgpt.com"):

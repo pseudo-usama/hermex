@@ -8,7 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
-from config import chatgpt_download_imgs_dir
+from scraper.config import chatgpt_download_imgs_dir
 
 
 class ChatGPTScraper:

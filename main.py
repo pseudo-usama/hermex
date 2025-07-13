@@ -1,4 +1,4 @@
-from .generate_imgs import generate_imgs_with_scraper
+from generate_imgs import generate_imgs_with_scraper
 
 
 if __name__ == "__main__":
