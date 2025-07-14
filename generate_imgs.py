@@ -42,7 +42,7 @@ def generate_imgs_with_scraper(initial_prompt,
             try:
                 chatgpt.download_last_generated_image()
                 chatgpt.human_like_delay(7)
-                img = selenium_download_dir.iterdir()[0]
+                img = list(selenium_download_dir.iterdir())[0]
                 img = img.rename(generated_imgs_dir / img.name)
                 downloaded_imgs.append(img)
                 print(f"Image {i+1} downloaded successfully.")
