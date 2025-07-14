@@ -1,4 +1,5 @@
 from pathlib import Path
 
 
-download_dir = Path("./chatgpt_imgs")
+selenium_download_dir = Path("./selenium_imgs")
+generated_imgs_dir = Path("./generated_imgs")

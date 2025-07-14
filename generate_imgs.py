@@ -1,20 +1,19 @@
 from scraper.chatgpt import ChatGPTScraper
-from scraper.config import download_dir
-from scraper.utils import list_and_sort_dir
+from scraper.config import selenium_download_dir, generated_imgs_dir
 
 
 def generate_imgs_with_scraper(initial_prompt,
                                num_frames,
                                delay_between_messages=5*60,
                                initial_url="https://chatgpt.com"):
-    if download_dir.exists() and any(download_dir.iterdir()):
-        print(f"Directory {download_dir} already exists and is not empty.")
+    if selenium_download_dir.exists() and any(selenium_download_dir.iterdir()):
+        print(f"Directory {selenium_download_dir} already exists and is not empty.")
         return
-    download_dir.mkdir(parents=True, exist_ok=True)
+    selenium_download_dir.mkdir(parents=True, exist_ok=True)
 
     chatgpt = ChatGPTScraper()
     chat_url = None
-    download_status = [False] * num_frames
+    downloaded_imgs = []
 
     try:
         chatgpt.initialize_driver()
@@ -39,9 +38,12 @@ def generate_imgs_with_scraper(initial_prompt,
             try:
                 chatgpt.download_last_generated_image()
                 chatgpt.human_like_delay(7)
+                img = selenium_download_dir.iterdir()[0]
+                img = img.rename(generated_imgs_dir / img.name)
+                downloaded_imgs.append(img)
                 print(f"Image {i+1} downloaded successfully.")
-                download_status[i] = True
             except Exception as e:
+                downloaded_imgs.append(None)
                 print(f"Error downloading image {i+1}: {e}")
 
             if i < num_frames - 1:
@@ -53,8 +55,4 @@ def generate_imgs_with_scraper(initial_prompt,
     finally:
         chatgpt.close()
 
-    # Map downloaded files to their positions or None for failures
-    files = iter(list_and_sort_dir(download_dir))
-    result_imgs = [next(files, None) if status else None for status in download_status]
-    
-    return chat_url, result_imgs
+    return chat_url, downloaded_imgs
