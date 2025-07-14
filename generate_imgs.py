@@ -11,6 +11,7 @@ def generate_imgs_with_scraper(initial_prompt,
         print(f"Directory {selenium_download_dir} already exists and is not empty.")
         return
     selenium_download_dir.mkdir(parents=True, exist_ok=True)
+    generated_imgs_dir.mkdir(parents=True, exist_ok=True)
 
     chatgpt = ChatGPTScraper(
         download_dir=selenium_download_dir,
