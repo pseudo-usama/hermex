@@ -12,10 +12,13 @@ from scraper.config import selenium_download_dir
 
 
 class ChatGPTScraper:
-    def __init__(self, chrome_version=138, headless=False):
+    def __init__(self,
+                 chrome_version=138,
+                 download_dir=selenium_download_dir,
+                 headless=False):
         self.chrome_data_dir = Path(os.path.join(os.getcwd(), "chrome-data")).absolute()
         self.chrome_version = chrome_version
-        self.download_dir = selenium_download_dir
+        self.download_dir = download_dir
         self.headless = headless
         self.driver = None
 

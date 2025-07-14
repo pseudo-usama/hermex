@@ -5,13 +5,17 @@ from scraper.config import selenium_download_dir, generated_imgs_dir
 def generate_imgs_with_scraper(initial_prompt,
                                num_frames,
                                delay_between_messages=5*60,
-                               initial_url="https://chatgpt.com"):
+                               initial_url="https://chatgpt.com",
+                               headless=False):
     if selenium_download_dir.exists() and any(selenium_download_dir.iterdir()):
         print(f"Directory {selenium_download_dir} already exists and is not empty.")
         return
     selenium_download_dir.mkdir(parents=True, exist_ok=True)
 
-    chatgpt = ChatGPTScraper()
+    chatgpt = ChatGPTScraper(
+        download_dir=selenium_download_dir,
+        headless=headless
+    )
     chat_url = None
     downloaded_imgs = []
 
