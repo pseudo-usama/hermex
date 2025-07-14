@@ -76,7 +76,7 @@ class ChatGPTScraper:
 
             # Click the input field
             input_box.click()
-            self.human_like_delay(0.5, 0.6)
+            self.human_like_delay(0.5)
 
             for char in message:
                 if char == '\n':
@@ -85,9 +85,9 @@ class ChatGPTScraper:
                     input_box.send_keys('\ue008')           # Release the Shift key
                 else:
                     input_box.send_keys(char)
-                time.sleep(random.uniform(0.01, 0.05))
+                self.human_like_delay(0.025)
 
-            self.human_like_delay()
+            self.human_like_delay(2)
 
             if submit:
                 input_box.send_keys("\n")
@@ -113,7 +113,7 @@ class ChatGPTScraper:
             raise TimeoutException("No images found in the last response.")
         image_elements[0].click()
 
-        self.human_like_delay(15, 20)
+        self.human_like_delay(20)
 
         # Now click the download button
         down_btn = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".flex.items-center.justify-self-end.text-end > span:nth-of-type(4)")))
@@ -124,7 +124,10 @@ class ChatGPTScraper:
     def get_last_response(self):
         pass
 
-    def human_like_delay(self, min_time=1, max_time=2):
+    def human_like_delay(self, t):
+        minmax_factor = 0.2
+        min_time = t - t * minmax_factor
+        max_time = t + t * minmax_factor
         time.sleep(random.uniform(min_time, max_time))
 
     def refresh_page(self):
