@@ -8,7 +8,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
-from scraper.config import selenium_download_dir
+from scraper.config import chrome_data_dir, selenium_download_dir
 
 
 class ChatGPTScraper:
@@ -16,7 +16,7 @@ class ChatGPTScraper:
                  chrome_version=138,
                  download_dir=selenium_download_dir,
                  headless=False):
-        self.chrome_data_dir = Path(os.path.join(os.getcwd(), "chrome-data")).absolute()
+        self.chrome_data_dir = chrome_data_dir
         self.chrome_version = chrome_version
         self.download_dir = download_dir
         self.headless = headless
