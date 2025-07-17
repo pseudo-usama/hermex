@@ -1,10 +1,11 @@
 from scraper.chatgpt import ChatGPTScraper
 from scraper.config import selenium_download_dir, generated_imgs_dir
+from scraper.adaptive_delay import wait_minutes as long_wait
 
 
 def generate_imgs_with_initial_prompt(initial_prompt,
                                       num_frames,
-                                      delay_between_messages=5*60,
+                                      delay_between_messages=5,
                                       initial_url="https://chatgpt.com",
                                       headless=False):
     if selenium_download_dir.exists() and any(selenium_download_dir.iterdir()):
@@ -27,7 +28,7 @@ def generate_imgs_with_initial_prompt(initial_prompt,
 
         print(f"Sending initial system prompt")
         chatgpt.type_message(initial_prompt)
-        chatgpt.human_like_delay(delay_between_messages)
+        long_wait(delay_between_messages)
 
         chat_url = chatgpt.get_current_url(only_base=True)
         chatgpt.open_url(chat_url+"?model=gpt-4o")
@@ -38,7 +39,7 @@ def generate_imgs_with_initial_prompt(initial_prompt,
 
             print(f"Generating image", i+1)
             chatgpt.type_message(f"good, now generate image no. {i+1}")
-            chatgpt.human_like_delay(delay_between_messages)
+            long_wait(delay_between_messages)
 
             try:
                 chatgpt.download_last_generated_image()
@@ -53,7 +54,7 @@ def generate_imgs_with_initial_prompt(initial_prompt,
 
             if i < num_frames - 1:
                 chatgpt.refresh_page()
-                chatgpt.human_like_delay(delay_between_messages)
+                long_wait(delay_between_messages)
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -88,7 +89,7 @@ def generate_imgs_with_initial_prompt_and_n_prompts(initial_prompt,
 
         print(f"Sending initial system prompt")
         chatgpt.type_message(initial_prompt)
-        chatgpt.human_like_delay(delay_between_messages)
+        long_wait(delay_between_messages)
 
         chat_url = chatgpt.get_current_url(only_base=True)
         chatgpt.open_url(chat_url+"?model=gpt-4o")
@@ -99,7 +100,7 @@ def generate_imgs_with_initial_prompt_and_n_prompts(initial_prompt,
 
             print(f"Generating image", i+1)
             chatgpt.type_message(prompt)
-            chatgpt.human_like_delay(delay_between_messages)
+            long_wait(delay_between_messages)
 
             try:
                 chatgpt.download_last_generated_image()
@@ -114,7 +115,7 @@ def generate_imgs_with_initial_prompt_and_n_prompts(initial_prompt,
 
             if i < len(prompts) - 1:
                 chatgpt.refresh_page()
-                chatgpt.human_like_delay(delay_between_messages)
+                long_wait(delay_between_messages)
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -152,7 +153,7 @@ def generate_imgs_with_n_prompts(prompts,
         for i, prompt in enumerate(prompts):
             print("Generating image", i+1)
             chatgpt.type_message(prompt)
-            chatgpt.human_like_delay(delay_between_messages)
+            long_wait(delay_between_messages)
 
             try:
                 chatgpt.download_last_generated_image()
@@ -167,7 +168,7 @@ def generate_imgs_with_n_prompts(prompts,
 
             if i < len(prompts) - 1:
                 chatgpt.refresh_page()
-                chatgpt.human_like_delay(delay_between_messages)
+                long_wait(delay_between_messages)
 
     except Exception as e:
         print(f"An error occurred: {e}")
