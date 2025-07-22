@@ -11,7 +11,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.action_chains import ActionChains
 
-from config import chrome_data_dir, generated_imgs_dir
+from scraper.config import chrome_data_dir, generated_imgs_dir
 
 
 class ChatGPTScraper:
