@@ -1,27 +1,33 @@
-import os
 import time
 import random
+from shutil import move as move_file
 from pathlib import Path
+from tempfile import TemporaryDirectory
 import undetected_chromedriver as uc
+from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.common.action_chains import ActionChains
 
-from scraper.config import chrome_data_dir, selenium_download_dir
+from config import chrome_data_dir, generated_imgs_dir
 
 
 class ChatGPTScraper:
     def __init__(self,
                  chrome_version=138,
-                 download_dir=selenium_download_dir,
+                 download_dir=generated_imgs_dir,
                  headless=False):
         self.chrome_data_dir = chrome_data_dir
         self.chrome_version = chrome_version
+        self._temp_dir = TemporaryDirectory()
+        self._selenium_download_dir = Path(self._temp_dir.name)
         self.download_dir = download_dir
         self.headless = headless
         self.driver = None
+
+        self.download_dir.mkdir(parents=True, exist_ok=True)
 
     def initialize_driver(self):
         """Initialize and configure the Chrome driver"""
@@ -40,14 +46,12 @@ class ChatGPTScraper:
         user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"
         options.add_argument(f"--user-agent={user_agent}")
 
-        if self.download_dir:
-            prefs = {
-                "download.default_directory": os.path.abspath(self.download_dir),
-                "download.prompt_for_download": False,
-                "download.directory_upgrade": True,
-                "safebrowsing.enabled": False
-            }
-            options.add_experimental_option("prefs", prefs)
+        options.add_experimental_option("prefs", {
+            "download.default_directory": str(self._selenium_download_dir),
+            "download.prompt_for_download": False,
+            "download.directory_upgrade": True,
+            "safebrowsing.enabled": False
+        })
 
         if self.headless:
             options.add_argument("--headless")
@@ -111,11 +115,25 @@ class ChatGPTScraper:
 
             self.human_like_delay(20)
 
-            # Now click the download button
             down_btn = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "header.grid > div:nth-of-type(2) button:nth-of-type(4)")))
             if not down_btn:
                 raise TimeoutException("Download button not found.")
             down_btn.click()
+            self.human_like_delay(5)
+
+            img = list(self._selenium_download_dir.iterdir())[0]
+            dest = self.download_dir / img.name
+            move_file(img, dest)
+
+            # try:    # Press ESC key to close open dialog
+            #     actions = ActionChains(self.driver)
+            #     actions.send_keys('\ue00c')  # ESC key
+            #     actions.perform()
+            #     self.human_like_delay(1)
+            # except Exception as e:
+            #     print(f"Error while pressing ESC key: {e}")
+
+            return dest
 
         def _get_text(element: WebElement):
             elem = element.find_element(By.CSS_SELECTOR, ".markdown")
@@ -133,10 +151,18 @@ class ChatGPTScraper:
             raise TimeoutException("No responses found in the chat.")
 
         last_response = responses[-1]
-        text_content = _get_text(last_response)
-        _get_img(last_response)
+        try:
+            text_content = _get_text(last_response)
+        except Exception as e:
+            print(f"Error getting text content: {e}")
+            text_content = None
+        try:
+            img = _get_img(last_response)
+        except Exception as e:
+            print(f"Error getting image: {e}")
+            img = None
 
-        return text_content
+        return text_content, img
 
     def human_like_delay(self, t):
         minmax_factor = 0.2
