@@ -7,6 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.remote.webelement import WebElement
 
 from scraper.config import chrome_data_dir, selenium_download_dir
 
@@ -101,7 +102,28 @@ class ChatGPTScraper:
             print("Could not find the input field. The page might have changed or is not loaded.")
             return False
 
-    def download_last_generated_image(self):
+    def get_last_response(self):
+        def _get_img(element: WebElement):
+            image_elems = element.find_elements(By.CSS_SELECTOR, "img")
+            if not image_elems:
+                raise TimeoutException("No images found in the last response.")
+            image_elems[0].click()
+
+            self.human_like_delay(20)
+
+            # Now click the download button
+            down_btn = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "header.grid > div:nth-of-type(2) button:nth-of-type(4)")))
+            if not down_btn:
+                raise TimeoutException("Download button not found.")
+            down_btn.click()
+
+        def _get_text(element: WebElement):
+            elem = element.find_element(By.CSS_SELECTOR, ".markdown")
+            if not elem:
+                raise TimeoutException("No text content found in the last response.")
+
+            return elem.text
+
         wait = WebDriverWait(self.driver, 15)
         responses = wait.until(
             EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".agent-turn"))
@@ -110,22 +132,11 @@ class ChatGPTScraper:
         if not responses:
             raise TimeoutException("No responses found in the chat.")
 
-        # Click the last response img to ensure images are loaded
-        image_elements = responses[-1].find_elements(By.CSS_SELECTOR, "img")
-        if not image_elements:
-            raise TimeoutException("No images found in the last response.")
-        image_elements[0].click()
+        last_response = responses[-1]
+        text_content = _get_text(last_response)
+        _get_img(last_response)
 
-        self.human_like_delay(20)
-
-        # Now click the download button
-        down_btn = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".flex.items-center.justify-self-end.text-end > span:nth-of-type(4)")))
-        if not down_btn:
-            raise TimeoutException("Download button not found.")
-        down_btn.click()
-
-    def get_last_response(self):
-        pass
+        return text_content
 
     def human_like_delay(self, t):
         minmax_factor = 0.2
