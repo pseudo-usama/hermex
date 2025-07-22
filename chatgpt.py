@@ -11,6 +11,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.action_chains import ActionChains
 
+from scraper.adaptive_delay import wait as long_wait
 from scraper.config import chrome_data_dir, generated_imgs_dir
 
 
@@ -84,7 +85,7 @@ class ChatGPTScraper:
 
             # Click the input field
             input_box.click()
-            self.human_like_delay(0.5)
+            self.sleep(0.5)
 
             for char in message:
                 if char == '\n':
@@ -93,9 +94,9 @@ class ChatGPTScraper:
                     input_box.send_keys('\ue008')           # Release the Shift key
                 else:
                     input_box.send_keys(char)
-                self.human_like_delay(0.025)
+                self.sleep(0.025)
 
-            self.human_like_delay(2)
+            self.sleep(2)
 
             if submit:
                 input_box.send_keys("\n")
@@ -113,13 +114,13 @@ class ChatGPTScraper:
                 raise TimeoutException("No images found in the last response.")
             image_elems[0].click()
 
-            self.human_like_delay(20)
+            self.sleep(20)
 
             down_btn = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "header.grid > div:nth-of-type(2) button:nth-of-type(4)")))
             if not down_btn:
                 raise TimeoutException("Download button not found.")
             down_btn.click()
-            self.human_like_delay(5)
+            self.sleep(5)
 
             img = list(self._selenium_download_dir.iterdir())[0]
             dest = self.download_dir / img.name
@@ -129,7 +130,7 @@ class ChatGPTScraper:
             #     actions = ActionChains(self.driver)
             #     actions.send_keys('\ue00c')  # ESC key
             #     actions.perform()
-            #     self.human_like_delay(1)
+            #     self.sleep(1)
             # except Exception as e:
             #     print(f"Error while pressing ESC key: {e}")
 
@@ -164,7 +165,11 @@ class ChatGPTScraper:
 
         return text_content, img
 
-    def human_like_delay(self, t):
+    def sleep(self, t):
+        if t > 40:
+            long_wait(t)
+            return
+
         minmax_factor = 0.2
         min_time = t - t * minmax_factor
         max_time = t + t * minmax_factor
@@ -181,7 +186,7 @@ class ChatGPTScraper:
     def _goto_model(self, model):
         url = self.get_current_url(only_base=True)
         self.open_url(f"{url}?model={model}")
-        self.human_like_delay(7)
+        self.sleep(7)
 
     def goto_gpt4o(self):
         self._goto_model("gpt-4o")
