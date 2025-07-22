@@ -1,12 +1,8 @@
-import os
 import time
 import random
-from pathlib import Path
 import undetected_chromedriver as uc
+from config import chrome_data_dir
 
-
-# Path for storing Chrome user data
-chrome_data_dir = Path(os.path.join(os.getcwd(), "chrome-data")).absolute()
 
 # Create a browser instance using undetected_chromedriver
 options = uc.ChromeOptions()
