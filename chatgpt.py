@@ -1,7 +1,7 @@
 import time
 import random
-from shutil import move as move_file
 from pathlib import Path
+from shutil import move as move_file
 from tempfile import TemporaryDirectory
 import undetected_chromedriver as uc
 from selenium.common.exceptions import TimeoutException
@@ -125,7 +125,7 @@ class ChatGPTScraper:
             dest = self.download_dir / img.name
             move_file(img, dest)
 
-            # try:    # Press ESC key to close open dialog
+            # try:    # Press ESC key to close image dialog
             #     actions = ActionChains(self.driver)
             #     actions.send_keys('\ue00c')  # ESC key
             #     actions.perform()
@@ -171,13 +171,23 @@ class ChatGPTScraper:
         time.sleep(random.uniform(min_time, max_time))
 
     def refresh_page(self):
-        """Refresh the current page"""
         self.driver.refresh()
 
     def get_current_url(self, only_base=False):
         if only_base:
             return self.driver.current_url.split("?")[0]
         return self.driver.current_url
+
+    def _goto_model(self, model):
+        url = self.get_current_url(only_base=True)
+        self.open_url(f"{url}?model={model}")
+        self.human_like_delay(7)
+
+    def goto_gpt4o(self):
+        self._goto_model("gpt-4o")
+
+    def goto_o3(self):
+        self._goto_model("o3")
 
     def close(self):
         """Close the browser and clean up"""
@@ -190,7 +200,6 @@ if __name__ == "__main__":
     scraper = ChatGPTScraper()
 
     try:
-        scraper.initialize_driver()
         scraper.open_url()
 
         initial_prompt = "Write a short poem about artificial intelligence"

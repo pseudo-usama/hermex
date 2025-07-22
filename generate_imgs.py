@@ -23,9 +23,8 @@ def generate_imgs_with_initial_prompt(initial_prompt,
         chatgpt.type_message(initial_prompt)
         long_wait(delay_between_messages)
 
+        chatgpt.goto_gpt4o()
         chat_url = chatgpt.get_current_url(only_base=True)
-        chatgpt.open_url(chat_url+"?model=gpt-4o")
-        chatgpt.human_like_delay(7)
 
         for i in range(num_frames):
             chatgpt.human_like_delay(7)
@@ -72,9 +71,8 @@ def generate_imgs_with_initial_prompt_and_n_prompts(initial_prompt,
         chatgpt.type_message(initial_prompt)
         long_wait(delay_between_messages)
 
+        chatgpt.goto_gpt4o()
         chat_url = chatgpt.get_current_url(only_base=True)
-        chatgpt.open_url(chat_url+"?model=gpt-4o")
-        chatgpt.human_like_delay(7)
 
         for i, prompt in enumerate(prompts):
             chatgpt.human_like_delay(7)
@@ -114,7 +112,6 @@ def generate_imgs_with_n_prompts(prompts,
     responses = []
 
     try:
-        chatgpt.initialize_driver()
         chatgpt.open_url(url=initial_url)
         chatgpt.human_like_delay(7)
 
