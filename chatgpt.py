@@ -163,7 +163,7 @@ class ChatGPTScraper:
     def sleep(self, t):
         if t > 40:
             long_wait(t)
-            return
+            return self
 
         minmax_factor = 0.2
         min_time = t - t * minmax_factor
