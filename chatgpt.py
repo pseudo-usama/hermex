@@ -182,18 +182,18 @@ class ChatGPTScraper:
             return url.split("?")[0]
         return url
 
-    def _goto_model(self, model):
+    def _goto_model(self, model, delay=7):
         url = self.get_current_url(only_base=True)
         self.open_url(f"{url}?model={model}")
-        self.sleep(7)
+        self.sleep(delay)
         return self
 
-    def goto_gpt4o(self):
-        self._goto_model("gpt-4o")
+    def goto_gpt4o(self, delay=7):
+        self._goto_model("gpt-4o", delay)
         return self
 
-    def goto_o3(self):
-        self._goto_model("o3")
+    def goto_o3(self, delay=7):
+        self._goto_model("o3", delay)
         return self
 
     def close(self):
