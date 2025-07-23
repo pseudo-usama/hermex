@@ -11,8 +11,11 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.action_chains import ActionChains
 
-from scraper.adaptive_delay import wait as long_wait
+import scraper.adaptive_delay as ad
 from scraper.config import chrome_data_dir, generated_imgs_dir
+
+
+ad.start_console_listener()
 
 
 class ChatGPTScraper:
@@ -162,7 +165,7 @@ class ChatGPTScraper:
 
     def sleep(self, t):
         if t > 40:
-            long_wait(t)
+            ad.wait(t)
             return self
 
         minmax_factor = 0.2
