@@ -202,6 +202,34 @@ class ChatGPTScraper:
             self.driver.quit()
             self.driver = None
 
+    def n_prompts(self, prompts, delay=5*60, refresh=False):
+        """
+        Send multiple prompts to the chat interface.
+        
+        :param prompts: List of prompts to send.
+        :param delay: Delay between each prompt in seconds.
+        :param refresh: Whether to refresh the page after each prompt.
+        """
+        responses = []
+        
+        for i, prompt in enumerate(prompts):
+            print(f"Sending prompt {i + 1}/{len(prompts)}")
+            self.type_message(prompt).sleep(delay)
+
+            text, img = self.get_last_response()
+            responses.append({ "text": text,"img": img })
+            print(f"Response {i+1}: ",
+                  "img," if img else "no image,",
+                  "text" if text else "no text")
+
+            if i < len(prompts) - 1:
+                if refresh:
+                    self.refresh_page()
+
+                self.sleep(delay)
+
+        return responses
+
 
 if __name__ == "__main__":
     scraper = ChatGPTScraper()
