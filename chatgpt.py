@@ -231,6 +231,15 @@ class ChatGPTScraper:
                 self.sleep(delay)
 
         return responses
+    
+    def save_html_redirect(self, dir_path):
+        url = self.get_current_url(only_base=True)
+        dir_path.mkdir(parents=True, exist_ok=True)
+
+        with open(dir_path / "open_chat.html", "w") as f:
+            f.write(f'<!DOCTYPE html><meta http-equiv="refresh" content="0;url={url}">')
+
+        return self
 
 
 if __name__ == "__main__":
