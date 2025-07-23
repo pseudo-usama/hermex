@@ -209,6 +209,8 @@ class ChatGPTScraper:
         :param prompts: List of prompts to send.
         :param delay: Delay between each prompt in seconds.
         :param refresh: Whether to refresh the page after each prompt.
+
+        :return: List of responses, each containing text and image (if available).
         """
         responses = []
         
