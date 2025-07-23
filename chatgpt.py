@@ -183,8 +183,12 @@ class ChatGPTScraper:
         return url
 
     def _goto_model(self, model, delay=7):
-        url = self.get_current_url(only_base=True)
-        self.open_url(f"{url}?model={model}")
+        # url = self.get_current_url(only_base=True)
+        # self.open_url(f"{url}?model={model}")
+
+        self.driver.find_element(By.CSS_SELECTOR, f'header button[aria-label^="Model selector"]').click()
+        self.driver.find_element(By.CSS_SELECTOR, f'div[data-testid="model-switcher-{model}"]').click()
+
         self.sleep(delay)
         return self
 
