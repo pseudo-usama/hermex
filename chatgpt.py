@@ -187,9 +187,10 @@ class ChatGPTScraper:
         # self.open_url(f"{url}?model={model}")
 
         self.driver.find_element(By.CSS_SELECTOR, f'header button[aria-label^="Model selector"]').click()
+        self.sleep(0.5)
         self.driver.find_element(By.CSS_SELECTOR, f'div[data-testid="model-switcher-{model}"]').click()
-
         self.sleep(delay)
+
         return self
 
     def goto_gpt4o(self, delay=7):
