@@ -65,7 +65,7 @@ class ChatGPTScraper:
             use_subprocess=True, 
             version_main=self.chrome_version
         )
-        return self.driver
+        return self
 
     def open_url(self, url="https://chatgpt.com"):
         if not self.driver:
@@ -73,39 +73,34 @@ class ChatGPTScraper:
 
         self.driver.get(url)
 
-        return self.driver
+        return self
 
     def type_message(self, message, submit=True):
-        try:
-            # Wait for the input field to be available (adjust selector as needed)
-            wait = WebDriverWait(self.driver, 20)
-            input_box = wait.until(
-                EC.element_to_be_clickable((By.CSS_SELECTOR, 'div[contenteditable="true"]'))
-            )
+        # Wait for the input field to be available (adjust selector as needed)
+        wait = WebDriverWait(self.driver, 20)
+        input_box = wait.until(
+            EC.element_to_be_clickable((By.CSS_SELECTOR, 'div[contenteditable="true"]'))
+        )
 
-            # Click the input field
-            input_box.click()
-            self.sleep(0.5)
+        # Click the input field
+        input_box.click()
+        self.sleep(0.5)
 
-            for char in message:
-                if char == '\n':
-                    # For newlines, press Shift+Enter instead of just Enter
-                    input_box.send_keys('\ue008' + '\n')    # \ue008 is Shift key
-                    input_box.send_keys('\ue008')           # Release the Shift key
-                else:
-                    input_box.send_keys(char)
-                self.sleep(0.025)
+        for char in message:
+            if char == '\n':
+                # For newlines, press Shift+Enter instead of just Enter
+                input_box.send_keys('\ue008' + '\n')    # \ue008 is Shift key
+                input_box.send_keys('\ue008')           # Release the Shift key
+            else:
+                input_box.send_keys(char)
+            self.sleep(0.025)
 
-            self.sleep(2)
+        self.sleep(2)
 
-            if submit:
-                input_box.send_keys("\n")
+        if submit:
+            input_box.send_keys("\n")
 
-            return True
-
-        except TimeoutException:
-            print("Could not find the input field. The page might have changed or is not loaded.")
-            return False
+        return self
 
     def get_last_response(self):
         def _get_img(element: WebElement):
@@ -175,24 +170,31 @@ class ChatGPTScraper:
         max_time = t + t * minmax_factor
         time.sleep(random.uniform(min_time, max_time))
 
+        return self
+
     def refresh_page(self):
         self.driver.refresh()
+        return self
 
     def get_current_url(self, only_base=False):
+        url = self.driver.current_url
         if only_base:
-            return self.driver.current_url.split("?")[0]
-        return self.driver.current_url
+            return url.split("?")[0]
+        return url
 
     def _goto_model(self, model):
         url = self.get_current_url(only_base=True)
         self.open_url(f"{url}?model={model}")
         self.sleep(7)
+        return self
 
     def goto_gpt4o(self):
         self._goto_model("gpt-4o")
+        return self
 
     def goto_o3(self):
         self._goto_model("o3")
+        return self
 
     def close(self):
         """Close the browser and clean up"""
