@@ -1,4 +1,5 @@
-from .generate_imgs import (
+from scraper.chatgpt import ChatGPTScraper
+from scraper.generate_imgs import (
     generate_imgs_with_initial_prompt,
     generate_imgs_with_initial_prompt_and_n_prompts,
     generate_imgs_with_n_prompts
@@ -6,6 +7,7 @@ from .generate_imgs import (
 
 
 __all__ = [
+    "ChatGPTScraper",
     "generate_imgs_with_initial_prompt",
     "generate_imgs_with_initial_prompt_and_n_prompts",
     "generate_imgs_with_n_prompts"
