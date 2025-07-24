@@ -210,7 +210,7 @@ class ChatGPTScraper:
             self.driver.quit()
             self.driver = None
 
-    def n_prompts(self, prompts, delay=5*60, refresh=False):
+    def n_prompts(self, prompts, delay=5*60, final_delay=7, refresh=False):
         """
         Send multiple prompts to the chat interface.
         
@@ -232,14 +232,16 @@ class ChatGPTScraper:
                   "img," if img else "no image,",
                   "text" if text else "no text")
 
-            if i < len(prompts) - 1:
-                if refresh:
-                    self.refresh_page()
+            if refresh:
+                self.refresh_page()
 
+            if i < len(prompts) - 1:
                 self.sleep(delay)
+            else:
+                self.sleep(final_delay)
 
         return responses
-    
+
     def save_html_redirect(self, dir_path):
         url = self.get_current_url(only_base=True)
         dir_path.mkdir(parents=True, exist_ok=True)
