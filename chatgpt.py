@@ -11,11 +11,8 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.action_chains import ActionChains
 
-import scraper.adaptive_delay as ad
+from scraper.adaptive_delay import wait as long_sleep
 from scraper.config import chrome_data_dir, generated_imgs_dir
-
-
-ad.start_console_listener()
 
 
 class ChatGPTScraper:
@@ -165,7 +162,7 @@ class ChatGPTScraper:
 
     def sleep(self, t):
         if t > 40:
-            ad.wait(t)
+            long_sleep(t)
             return self
 
         minmax_factor = 0.2
@@ -210,12 +207,17 @@ class ChatGPTScraper:
             self.driver.quit()
             self.driver = None
 
-    def n_prompts(self, prompts, delay=5*60, final_delay=7, refresh=False):
+    def n_prompts(self,
+                  prompts,
+                  delay=5*60,
+                  final_delay=7,
+                  refresh=False):
         """
         Send multiple prompts to the chat interface.
         
         :param prompts: List of prompts to send.
         :param delay: Delay between each prompt in seconds.
+        :param final_delay: Delay after the last prompt in seconds.
         :param refresh: Whether to refresh the page after each prompt.
 
         :return: List of responses, each containing text and image (if available).
