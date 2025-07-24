@@ -12,7 +12,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.common.action_chains import ActionChains
 
 from scraper.adaptive_delay import wait as long_sleep
-from scraper.config import chrome_data_dir, generated_imgs_dir
+from scraper.config import LONG_WAIT, SHORT_WAIT, chrome_data_dir, generated_imgs_dir
 
 
 class ChatGPTScraper:
@@ -182,10 +182,7 @@ class ChatGPTScraper:
             return url.split("?")[0]
         return url
 
-    def _goto_model(self, model, delay=7):
-        # url = self.get_current_url(only_base=True)
-        # self.open_url(f"{url}?model={model}")
-
+    def _goto_model(self, model, delay=SHORT_WAIT):
         self.driver.find_element(By.CSS_SELECTOR, f'header button[aria-label^="Model selector"]').click()
         self.sleep(0.5)
         self.driver.find_element(By.CSS_SELECTOR, f'div[data-testid="model-switcher-{model}"]').click()
@@ -193,11 +190,11 @@ class ChatGPTScraper:
 
         return self
 
-    def goto_gpt4o(self, delay=7):
+    def goto_gpt4o(self, delay=SHORT_WAIT):
         self._goto_model("gpt-4o", delay)
         return self
 
-    def goto_o3(self, delay=7):
+    def goto_o3(self, delay=SHORT_WAIT):
         self._goto_model("o3", delay)
         return self
 
@@ -209,8 +206,8 @@ class ChatGPTScraper:
 
     def n_prompts(self,
                   prompts,
-                  delay=5*60,
-                  final_delay=7,
+                  delay=LONG_WAIT,
+                  final_delay=SHORT_WAIT,
                   refresh=False):
         """
         Send multiple prompts to the chat interface.
