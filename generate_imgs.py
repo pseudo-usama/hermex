@@ -22,7 +22,6 @@ def generate_imgs_with_initial_prompt(initial_prompt,
         chatgpt.type_message(initial_prompt)
         chatgpt.sleep(delay_between_messages)
 
-        chatgpt.goto_gpt4o()
         chat_url = chatgpt.get_current_url(only_base=True)
 
         for i in range(num_frames):
@@ -70,7 +69,6 @@ def generate_imgs_with_initial_prompt_and_n_prompts(initial_prompt,
         chatgpt.type_message(initial_prompt)
         chatgpt.sleep(delay_between_messages)
 
-        chatgpt.goto_gpt4o()
         chat_url = chatgpt.get_current_url(only_base=True)
 
         for i, prompt in enumerate(prompts):

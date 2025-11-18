@@ -17,7 +17,7 @@ from scraper.config import LONG_WAIT, SHORT_WAIT, chrome_data_dir, generated_img
 
 class ChatGPTScraper:
     def __init__(self,
-                 chrome_version=138,
+                 chrome_version=142,
                  download_dir=generated_imgs_dir,
                  headless=False):
         self.chrome_data_dir = chrome_data_dir
@@ -191,12 +191,19 @@ class ChatGPTScraper:
         return self
 
     def goto_gpt4o(self, delay=SHORT_WAIT):
-        self._goto_model("gpt-4o", delay)
-        return self
+        raise NotImplementedError("Not implemented yet")
 
     def goto_o3(self, delay=SHORT_WAIT):
-        self._goto_model("o3", delay)
-        return self
+        raise NotImplementedError("Not implemented yet")
+    
+    def turn_on_thinking(self, delay=SHORT_WAIT):
+        raise NotImplementedError("Not implemented yet")
+    
+    def turn_off_thinking(self, delay=SHORT_WAIT):
+        raise NotImplementedError("Not implemented yet")
+    
+    def turn_on_auto_model(self, delay=SHORT_WAIT):
+        raise NotImplementedError("Not implemented yet")
 
     def close(self):
         """Close the browser and clean up"""
