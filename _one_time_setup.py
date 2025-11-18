@@ -1,4 +1,4 @@
-from chatgpt import ChatGPTScraper
+from scraper.chatgpt import ChatGPTScraper
 
 try:
     gpt = ChatGPTScraper()
