@@ -1,13 +1,24 @@
-from scraper import ChatGPTScraper
-from scraper import generated_imgs_dir
+from scraper import ChatGPTScraper, GeminiScraper
+from scraper.config import LONG_WAIT, generated_imgs_dir
+
+
+def _identify_scraper(initial_url):
+    if "chatgpt" in initial_url:
+        return ChatGPTScraper
+    elif "gemini" in initial_url:
+        return GeminiScraper
+    else:
+        raise ValueError("Unsupported URL for scraper identification.")
 
 
 def generate_imgs_with_initial_prompt(initial_prompt,
                                       num_frames,
-                                      delay_between_messages=5*60,
+                                      delay_between_messages=LONG_WAIT,
                                       initial_url="https://chatgpt.com",
                                       headless=False):
-    chatgpt = ChatGPTScraper(
+    ScraperClass = _identify_scraper(initial_url)
+
+    scraper: ChatGPTScraper | GeminiScraper = ScraperClass(
         download_dir=generated_imgs_dir,
         headless=headless
     )
@@ -15,46 +26,50 @@ def generate_imgs_with_initial_prompt(initial_prompt,
     responses = []
 
     try:
-        chatgpt.open_url(url=initial_url)
-        chatgpt.sleep(7)
+        scraper.open_url(url=initial_url)
+        scraper.sleep(7)
 
         print(f"Sending initial system prompt")
-        chatgpt.type_message(initial_prompt)
-        chatgpt.sleep(delay_between_messages)
+        scraper.type_message(initial_prompt)
+        scraper.sleep(delay_between_messages)
 
-        chat_url = chatgpt.get_current_url(only_base=True)
+        chat_url = scraper.get_current_url(only_base=True)
+        if ScraperClass == GeminiScraper:
+            scraper.select_nano_banana()
 
         for i in range(num_frames):
-            chatgpt.sleep(7)
+            scraper.sleep(7)
 
             print(f"Generating image", i+1)
-            chatgpt.type_message(f"good, now generate image no. {i+1}")
-            chatgpt.sleep(delay_between_messages)
+            scraper.type_message(f"good, now generate image no. {i+1}")
+            scraper.sleep(delay_between_messages)
 
-            text, img = chatgpt.get_last_response()
+            text, img = scraper.get_last_response()
             responses.append({"text": text, "img": img})
             print(f"Response {i+1}: ",
                   "img," if img else "no image,",
                   "text" if text else "no text")
 
             if i < num_frames - 1:
-                chatgpt.refresh_page()
-                chatgpt.sleep(delay_between_messages)
+                scraper.refresh_page()
+                scraper.sleep(delay_between_messages)
 
     except Exception as e:
         print(f"An error occurred: {e}")
     finally:
-        chatgpt.close()
+        scraper.close()
 
     return chat_url, responses
 
 
 def generate_imgs_with_initial_prompt_and_n_prompts(initial_prompt,
                                                     prompts,
-                                                    delay_between_messages=5*60,
+                                                    delay_between_messages=LONG_WAIT,
                                                     initial_url="https://chatgpt.com",
                                                     headless=False):
-    chatgpt = ChatGPTScraper(
+    ScraperClass = _identify_scraper(initial_url)
+
+    scraper: ChatGPTScraper | GeminiScraper = ScraperClass(
         download_dir=generated_imgs_dir,
         headless=headless
     )
@@ -62,41 +77,43 @@ def generate_imgs_with_initial_prompt_and_n_prompts(initial_prompt,
     responses = []
 
     try:
-        chatgpt.open_url(url=initial_url)
-        chatgpt.sleep(7)
+        scraper.open_url(url=initial_url)
+        scraper.sleep(7)
 
         print(f"Sending initial system prompt")
-        chatgpt.type_message(initial_prompt)
-        chatgpt.sleep(delay_between_messages)
+        scraper.type_message(initial_prompt)
+        scraper.sleep(delay_between_messages)
 
-        chat_url = chatgpt.get_current_url(only_base=True)
+        chat_url = scraper.get_current_url(only_base=True)
+        if ScraperClass == GeminiScraper:
+            scraper.select_nano_banana()
 
         for i, prompt in enumerate(prompts):
-            chatgpt.sleep(7)
+            scraper.sleep(7)
 
             print(f"Generating image", i+1)
-            chatgpt.type_message(prompt)
-            chatgpt.sleep(delay_between_messages)
+            scraper.type_message(prompt)
+            scraper.sleep(delay_between_messages)
 
-            text, img = chatgpt.get_last_response()
+            text, img = scraper.get_last_response()
             responses.append({"text": text, "img": img})
             print(f"Response {i+1}: ",
                   "img," if img else "no image,",
                   "text" if text else "no text")
 
             if i < len(prompts) - 1:
-                chatgpt.refresh_page()
-                chatgpt.sleep(delay_between_messages)
+                scraper.refresh_page()
+                scraper.sleep(delay_between_messages)
 
     except Exception as e:
         print(f"An error occurred: {e}")
     finally:
-        chatgpt.close()
+        scraper.close()
 
     return chat_url, responses
     
 
-
+# TODO: I guess it's already in scraper_base.py as n_prompts?
 def generate_imgs_with_n_prompts(prompts,
                                  delay_between_messages=5*60,
                                  initial_url="https://chatgpt.com",
