@@ -1,5 +1,5 @@
-from scraper.chatgpt import ChatGPTScraper
-from scraper.config import generated_imgs_dir
+from scraper import ChatGPTScraper
+from scraper import generated_imgs_dir
 
 
 def generate_imgs_with_initial_prompt(initial_prompt,
