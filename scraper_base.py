@@ -135,6 +135,23 @@ class Scraper:
             f.write(f'<!DOCTYPE html><meta http-equiv="refresh" content="0;url={url}">')
 
         return self
+    
+    @classmethod
+    def simple_text_query(cls, prompt):
+        """
+        Send a single text prompt to the chat interface.
+
+        :param prompt: The prompt text to send.
+
+        :return: The text response from the chat interface.
+        """
+        scraper = cls().initialize_driver()
+        scraper.open_url().sleep(SHORT_WAIT)
+        scraper.type_message(prompt).sleep(LONG_WAIT)
+
+        text, _ = scraper.get_last_response()
+
+        return text
 
     def n_prompts(self,
                   prompts,
