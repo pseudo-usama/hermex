@@ -1,8 +1,10 @@
 import time
 import random
+import pyperclip
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import undetected_chromedriver as uc
+from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -69,13 +71,15 @@ class Scraper:
         self.driver.get(url)
 
         return self
-    
+
     def type_message(self, message: str, input_box: WebElement, submit=True):
         for char in message:
-            if char == '\n':
-                # For newlines, press Shift+Enter instead of just Enter
-                input_box.send_keys('\ue008' + '\n')    # \ue008 is Shift key
-                input_box.send_keys('\ue008')           # Release the Shift key
+            # self._send_key(input_box, char)
+            if char == '\n':            # Handle Newline: Shift+Enter
+                input_box.send_keys(Keys.SHIFT, Keys.ENTER)
+            elif ord(char) > 0xFFFF:    # Handle Emojis: Copy and Paste
+                pyperclip.copy(char)
+                input_box.send_keys(Keys.COMMAND, 'v')
             else:
                 input_box.send_keys(char)
             self.sleep(0.025)
@@ -137,19 +141,21 @@ class Scraper:
         return self
     
     @classmethod
-    def simple_text_query(cls, prompt):
+    def simple_text_query(cls, prompt, wait=LONG_WAIT):
         """
-        Send a single text prompt to the chat interface.
+        Send a text prompt to the chat interface.
 
         :param prompt: The prompt text to send.
+        :param wait: Time to wait for the response in seconds.
 
         :return: The text response from the chat interface.
         """
         scraper = cls().initialize_driver()
         scraper.open_url().sleep(SHORT_WAIT)
-        scraper.type_message(prompt).sleep(LONG_WAIT)
+        scraper.type_message(prompt).sleep(wait)
 
         text, _ = scraper.get_last_response()
+        scraper.close()
 
         return text
 
