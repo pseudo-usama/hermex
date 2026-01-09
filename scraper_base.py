@@ -92,6 +92,21 @@ class Scraper:
             input_box.send_keys("\n")
 
         return self
+    
+    def paste_message(self, message: str, input_box: WebElement, submit=True, fake_typing=True):
+        if fake_typing:
+            self.type_message("Some fake text... " * 20, submit=False)
+            input_box.send_keys(Keys.COMMAND, 'a')
+            input_box.send_keys(Keys.BACKSPACE)
+
+        pyperclip.copy(message)
+        input_box.send_keys(Keys.COMMAND, 'v')
+        self.sleep(2)
+
+        if submit:
+            input_box.send_keys("\n")
+
+        return self
 
     def sleep(self, t):
         if t > 40:

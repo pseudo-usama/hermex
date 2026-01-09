@@ -27,6 +27,18 @@ class GeminiScraper(Scraper):
         super().type_message(message, input_p, submit=submit)
         return self
 
+    def paste_message(self, message: str, submit=True, fake_typing=True):
+        wait = WebDriverWait(self.driver, 20)
+        input_box = wait.until(
+            EC.element_to_be_clickable((By.TAG_NAME, 'rich-textarea'))
+        )
+        input_box.click()
+        self.sleep(0.5)
+        input_p = input_box.find_element(By.TAG_NAME, 'p')
+
+        super().paste_message(message, input_p, submit=submit, fake_typing=fake_typing)
+        return self
+
     def get_last_response(self, get_markdown=False):
         def _get_img(element: WebElement):
             element.find_element(By.TAG_NAME, "download-generated-image-button").click()
@@ -85,13 +97,12 @@ if __name__ == "__main__":
     scraper = GeminiScraper()
 
     try:
-        scraper.open_url("https://gemini.google.com/app/a8089b0f67eaf42b")
+        scraper.open_url("https://gemini.google.com")
+        scraper.sleep(2)
 
-        scraper.sleep(10)
-        # scraper.select_nano_banana()
         initial_prompt = "What is peft"
-        # scraper.type_message(initial_prompt)
-        # scraper.sleep(60)
+        scraper.paste_message(initial_prompt)
+        scraper.sleep(60)
         response = scraper.get_last_response(get_markdown=True)
         print(f"Response: {response}")
 
