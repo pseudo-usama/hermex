@@ -16,7 +16,8 @@ class Scraper:
     def __init__(self,
                  chrome_version=143,
                  download_dir=generated_imgs_dir,
-                 headless=False):
+                 headless=False,
+                 typing_delay=0.025):
         self.chrome_data_dir = chrome_data_dir
         self.chrome_version = chrome_version
         self._temp_dir = TemporaryDirectory()
@@ -24,6 +25,7 @@ class Scraper:
         self.download_dir = download_dir
         self.headless = headless
         self.driver = None
+        self.typing_delay = typing_delay
 
         self.download_dir.mkdir(parents=True, exist_ok=True)
 
@@ -82,7 +84,7 @@ class Scraper:
                 input_box.send_keys(Keys.COMMAND, 'v')
             else:
                 input_box.send_keys(char)
-            self.sleep(0.025)
+            self.sleep(self.typing_delay)
 
         self.sleep(2)
 
