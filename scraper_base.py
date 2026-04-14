@@ -14,7 +14,7 @@ from scraper.config import LONG_WAIT, SHORT_WAIT, chrome_data_dir, generated_img
 
 class Scraper:
     def __init__(self,
-                 chrome_version=143,
+                 chrome_version=147,
                  download_dir=generated_imgs_dir,
                  headless=False,
                  typing_delay=0.025):

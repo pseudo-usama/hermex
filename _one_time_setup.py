@@ -1,9 +1,10 @@
-from scraper.chatgpt import ChatGPTScraper
+from scraper import ChatGPTScraper, GeminiScraper
+
 
 try:
-    gpt = ChatGPTScraper()
-    gpt.open_url()
-    gpt.sleep(10)
+    scraper_obj = GeminiScraper()
+    scraper_obj.open_url()
+    scraper_obj.sleep(10)
 
 except Exception as e:
     import traceback
@@ -12,4 +13,4 @@ except Exception as e:
 
 finally:
     input("Press Enter to close the browser...")
-    gpt.close()
+    scraper_obj.close()
