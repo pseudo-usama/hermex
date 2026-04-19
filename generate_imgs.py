@@ -30,7 +30,7 @@ def generate_imgs_with_initial_prompt(initial_prompt,
         scraper.sleep(7)
 
         print(f"Sending initial system prompt")
-        scraper.type_message(initial_prompt)
+        scraper.send_message(initial_prompt)
         scraper.sleep(delay_between_messages)
 
         chat_url = scraper.get_current_url(only_base=True)
@@ -41,7 +41,7 @@ def generate_imgs_with_initial_prompt(initial_prompt,
             scraper.sleep(7)
 
             print(f"Generating image", i+1)
-            scraper.type_message(f"good, now generate image no. {i+1}")
+            scraper.send_message(f"good, now generate image no. {i+1}")
             scraper.sleep(delay_between_messages)
 
             text, img = scraper.get_last_response()
@@ -81,7 +81,7 @@ def generate_imgs_with_initial_prompt_and_n_prompts(initial_prompt,
         scraper.sleep(7)
 
         print(f"Sending initial system prompt")
-        scraper.type_message(initial_prompt)
+        scraper.send_message(initial_prompt)
         scraper.sleep(delay_between_messages)
 
         chat_url = scraper.get_current_url(only_base=True)
@@ -92,7 +92,7 @@ def generate_imgs_with_initial_prompt_and_n_prompts(initial_prompt,
             scraper.sleep(7)
 
             print(f"Generating image", i+1)
-            scraper.type_message(prompt)
+            scraper.send_message(prompt)
             scraper.sleep(delay_between_messages)
 
             text, img = scraper.get_last_response()
@@ -133,7 +133,7 @@ def generate_imgs_with_n_prompts(prompts,
 
         for i, prompt in enumerate(prompts):
             print("Generating image", i+1)
-            chatgpt.type_message(prompt)
+            chatgpt.send_message(prompt)
             chatgpt.sleep(delay_between_messages)
 
             text, img = chatgpt.get_last_response()

@@ -1,10 +1,13 @@
+import sys
 import time
 import random
 import pyperclip
+from abc import ABC, abstractmethod
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import undetected_chromedriver as uc
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -12,7 +15,7 @@ from scraper.adaptive_delay import wait as long_sleep
 from scraper.config import LONG_WAIT, SHORT_WAIT, chrome_data_dir, generated_imgs_dir
 
 
-class Scraper:
+class Scraper(ABC):
     def __init__(self,
                  chrome_version=147,
                  download_dir=generated_imgs_dir,
@@ -74,14 +77,32 @@ class Scraper:
 
         return self
 
-    def type_message(self, message: str, input_box: WebElement, submit=True):
+    @abstractmethod
+    def send_message(self,
+                     message: str,
+                     submit: bool = True,
+                     images: list[str | Path] = None,
+                     paste: bool = False,
+                     fake_typing: bool = True) -> "Scraper":
+        """
+        Input a message into the chat, optionally attaching images.
+
+        :param message: Text to send.
+        :param submit: Whether to press Enter after composing the message.
+        :param images: List of image file paths to attach before the message.
+        :param paste: If True, paste the message instead of typing it character by character.
+                      Useful for long messages where typing is too slow.
+        :param fake_typing: When paste=True, type dummy text first to avoid bot detection,
+                            then replace it with the real message.
+        """
+
+    def _type_into(self, message: str, input_box: WebElement, submit=True):
         for char in message:
-            # self._send_key(input_box, char)
             if char == '\n':            # Handle Newline: Shift+Enter
                 input_box.send_keys(Keys.SHIFT, Keys.ENTER)
             elif ord(char) > 0xFFFF:    # Handle Emojis: Copy and Paste
                 pyperclip.copy(char)
-                input_box.send_keys(Keys.COMMAND, 'v')
+                self._paste()
             else:
                 input_box.send_keys(char)
             self.sleep(self.typing_delay)
@@ -93,20 +114,32 @@ class Scraper:
 
         return self
     
-    def paste_message(self, message: str, input_box: WebElement, submit=True, fake_typing=True):
+    def _paste_into(self, message: str, input_box: WebElement, submit=True, fake_typing=True):
         if fake_typing:
-            self.type_message("Some fake text... " * 20, submit=False)
+            self._type_into("Some fake text... " * 20, input_box, submit=False)
             input_box.send_keys(Keys.COMMAND, 'a')
             input_box.send_keys(Keys.BACKSPACE)
 
         pyperclip.copy(message)
-        input_box.send_keys(Keys.COMMAND, 'v')
+        self._paste()
         self.sleep(2)
 
         if submit:
             input_box.send_keys("\n")
 
         return self
+
+    def _paste(self):
+        self.driver.switch_to.window(self.driver.current_window_handle)
+        self.driver.execute_script("window.focus();")
+        if sys.platform == 'darwin':
+            ActionChains(self.driver).key_down(Keys.COMMAND).send_keys('v').key_up(Keys.COMMAND).perform()
+        elif sys.platform == 'win32':
+            raise NotImplementedError("Paste not implemented for Windows.")
+        elif sys.platform.startswith('linux'):
+            raise NotImplementedError("Paste not implemented for Linux.")
+        else:
+            raise NotImplementedError(f"Paste not implemented for OS: {sys.platform}")
 
     def sleep(self, t):
         if t > 40:
@@ -169,7 +202,7 @@ class Scraper:
         """
         scraper = cls().initialize_driver()
         scraper.open_url().sleep(SHORT_WAIT)
-        scraper.type_message(prompt).sleep(wait)
+        scraper.send_message(prompt).sleep(wait)
 
         text, _ = scraper.get_last_response()
         scraper.close()
@@ -195,7 +228,7 @@ class Scraper:
 
         for i, prompt in enumerate(prompts):
             print(f"Sending prompt {i + 1}/{len(prompts)}")
-            self.type_message(prompt).sleep(delay)
+            self.send_message(prompt).sleep(delay)
 
             text, img = self.get_last_response()
             responses.append({ "text": text,"img": img })

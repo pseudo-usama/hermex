@@ -1,3 +1,4 @@
+from pathlib import Path
 from shutil import move as move_file
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
@@ -14,18 +15,27 @@ class ChatGPTScraper(Scraper):
         super().open_url(url)
         return self
 
-    def type_message(self, message, submit=True):
-        # Wait for the input field to be available (adjust selector as needed)
+    def send_message(self,
+                     message,
+                     submit=True,
+                     images: list[str | Path] = None,
+                     paste=False,
+                     fake_typing=True):
+        if images:
+            raise NotImplementedError("Image upload not implemented for ChatGPT.")
+
         wait = WebDriverWait(self.driver, 20)
         input_box = wait.until(
             EC.element_to_be_clickable((By.CSS_SELECTOR, 'div[contenteditable="true"]'))
         )
-
-        # Click the input field
         input_box.click()
         self.sleep(0.5)
 
-        super().type_message(message, input_box, submit=submit)
+        if paste:
+            self._paste_into(message, input_box, submit=submit, fake_typing=fake_typing)
+        else:
+            self._type_into(message, input_box, submit=submit)
+
         return self
 
     def get_last_response(self):
@@ -117,7 +127,7 @@ if __name__ == "__main__":
         scraper.open_url()
 
         initial_prompt = "Write a short poem about artificial intelligence"
-        scraper.type_message(initial_prompt)
+        scraper.send_message(initial_prompt)
         
         input("Press Enter to close the browser...")
     finally:

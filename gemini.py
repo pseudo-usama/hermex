@@ -1,4 +1,5 @@
 import pyperclip
+from pathlib import Path
 from shutil import move as move_file
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.by import By
@@ -8,6 +9,8 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from scraper import Scraper
 from scraper.config import SHORT_WAIT
+from scraper.utils import copy_image_to_clipboard
+from scraper.config import SUPPORTED_IMAGE_EXTENSIONS
 
 
 class GeminiScraper(Scraper):
@@ -15,28 +18,30 @@ class GeminiScraper(Scraper):
         super().open_url(url)
         return self
 
-    def type_message(self, message: str, submit=True):
+    def send_message(self,
+                     message: str,
+                     submit=True,
+                     images: list[str | Path] = None,
+                     paste=False,
+                     fake_typing=True):
         wait = WebDriverWait(self.driver, 20)
         input_box = wait.until(
             EC.element_to_be_clickable((By.TAG_NAME, 'rich-textarea'))
         )
+
+        if images:
+            self._upload_imgs(images, input_box)
+            self.wait_until_send_button_enabled()
+
         input_box.click()
         self.sleep(0.5)
         input_p = input_box.find_element(By.TAG_NAME, 'p')
 
-        super().type_message(message, input_p, submit=submit)
-        return self
+        if paste:
+            self._paste_into(message, input_p, submit=submit, fake_typing=fake_typing)
+        else:
+            self._type_into(message, input_p, submit=submit)
 
-    def paste_message(self, message: str, submit=True, fake_typing=True):
-        wait = WebDriverWait(self.driver, 20)
-        input_box = wait.until(
-            EC.element_to_be_clickable((By.TAG_NAME, 'rich-textarea'))
-        )
-        input_box.click()
-        self.sleep(0.5)
-        input_p = input_box.find_element(By.TAG_NAME, 'p')
-
-        super().paste_message(message, input_p, submit=submit, fake_typing=fake_typing)
         return self
 
     def get_last_response(self, get_markdown=False):
@@ -80,6 +85,36 @@ class GeminiScraper(Scraper):
             img = None
 
         return text_content, img
+    
+    def _upload_imgs(self, image_paths: list[str | Path], input_box: WebElement):
+        # TODO: This upload method would not work in headless mode
+        resolved = []
+        for image_path in image_paths:
+            image_path = Path(image_path).resolve()
+            if image_path.suffix.lower() not in SUPPORTED_IMAGE_EXTENSIONS:
+                raise ValueError(f"Unsupported file type '{image_path.suffix}'. Must be one of: {SUPPORTED_IMAGE_EXTENSIONS}")
+            resolved.append(image_path)
+
+        for image_path in resolved:
+            copy_image_to_clipboard(image_path)
+            self.sleep(0.3)
+
+            input_box.click()
+            self.sleep(0.5)
+            self._paste()
+            self.sleep(0.5)
+
+    def wait_until_send_button_enabled(self, max_wait=60):
+        for _ in range(max_wait):
+            wait = WebDriverWait(self.driver, 20)
+            send_button = wait.until(
+                EC.presence_of_element_located((By.CSS_SELECTOR, 'button[aria-label="Send message"]'))
+            )
+            aria_disabled = send_button.get_attribute("aria-disabled")
+            if aria_disabled == "false":
+                break
+            self.sleep(1)
+
 
     def select_nano_banana(self, delay=SHORT_WAIT):
         """Select the Nano Banana model on the Gemini page"""
@@ -101,7 +136,7 @@ if __name__ == "__main__":
         scraper.sleep(2)
 
         initial_prompt = "What is peft"
-        scraper.paste_message(initial_prompt)
+        scraper.send_message(initial_prompt, paste=True)
         scraper.sleep(60)
         response = scraper.get_last_response(get_markdown=True)
         print(f"Response: {response}")
