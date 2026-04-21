@@ -40,7 +40,7 @@ class Scraper(ABC):
         self.disable_web_security = disable_web_security
         self._temp_dir = TemporaryDirectory()
         self._selenium_download_dir = Path(self._temp_dir.name)
-        self.download_dir = download_dir
+        self.download_dir = Path(download_dir)
         self.headless = headless
         self.driver = None
         self.typing_delay = typing_delay
