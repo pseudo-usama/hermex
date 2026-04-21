@@ -23,7 +23,8 @@ class GeminiScraper(Scraper):
                      submit=True,
                      images: list[str | Path] = None,
                      paste=False,
-                     fake_typing=True):
+                     fake_typing=True,
+                     typing_delay: float = None):
         wait = WebDriverWait(self.driver, 20)
         input_box = wait.until(
             EC.element_to_be_clickable((By.TAG_NAME, 'rich-textarea'))
@@ -38,9 +39,9 @@ class GeminiScraper(Scraper):
         input_p = input_box.find_element(By.TAG_NAME, 'p')
 
         if paste:
-            self._paste_into(message, input_p, submit=submit, fake_typing=fake_typing)
+            self._paste_into(message, input_p, submit=submit, fake_typing=fake_typing, typing_delay=typing_delay)
         else:
-            self._type_into(message, input_p, submit=submit)
+            self._type_into(message, input_p, submit=submit, typing_delay=typing_delay)
 
         return self
 

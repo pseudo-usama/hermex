@@ -98,7 +98,8 @@ class Scraper(ABC):
                      submit: bool = True,
                      images: list[str | Path] = None,
                      paste: bool = False,
-                     fake_typing: bool = True) -> "Scraper":
+                     fake_typing: bool = True,
+                     typing_delay: float = None) -> "Scraper":
         """
         Input a message into the chat, optionally attaching images.
 
@@ -109,6 +110,8 @@ class Scraper(ABC):
                       Useful for long messages where typing is too slow.
         :param fake_typing: When paste=True, type dummy text first to avoid bot detection,
                             then replace it with the real message.
+        :param typing_delay: Seconds between each keystroke. Overrides the instance-level
+                             default set in the constructor for this call only.
         """
 
     @abstractmethod
@@ -123,7 +126,8 @@ class Scraper(ABC):
         :return: Tuple of (text_content, image_path), either may be None.
         """
 
-    def _type_into(self, message: str, input_box: WebElement, submit=True):
+    def _type_into(self, message: str, input_box: WebElement, submit=True, typing_delay: float = None):
+        delay = typing_delay if typing_delay is not None else self.typing_delay
         for char in message:
             if char == '\n':            # Handle Newline: Shift+Enter
                 input_box.send_keys(Keys.SHIFT, Keys.ENTER)
@@ -132,7 +136,7 @@ class Scraper(ABC):
                 self._paste()
             else:
                 input_box.send_keys(char)
-            self.sleep(self.typing_delay)
+            self.sleep(delay)
 
         self.sleep(2)
 
@@ -140,10 +144,10 @@ class Scraper(ABC):
             input_box.send_keys("\n")
 
         return self
-    
-    def _paste_into(self, message: str, input_box: WebElement, submit=True, fake_typing=True):
+
+    def _paste_into(self, message: str, input_box: WebElement, submit=True, fake_typing=True, typing_delay: float = None):
         if fake_typing:
-            self._type_into("Some fake text... " * 20, input_box, submit=False)
+            self._type_into("Some fake text... " * 20, input_box, submit=False, typing_delay=typing_delay)
             input_box.send_keys(Keys.COMMAND, 'a')
             input_box.send_keys(Keys.BACKSPACE)
 
