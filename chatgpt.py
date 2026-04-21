@@ -38,7 +38,14 @@ class ChatGPTScraper(Scraper):
 
         return self
 
-    def get_last_response(self):
+    def get_last_response(self,
+                          get_markdown=False,
+                          remove_watermark=False):
+        if get_markdown:
+            raise NotImplementedError("get_markdown is not supported for ChatGPT yet.")
+        if remove_watermark:
+            raise NotImplementedError("remove_watermark is not supported for ChatGPT yet.")
+
         def _get_img(element: WebElement):
             image_elems = element.find_elements(By.CSS_SELECTOR, "img")
             if not image_elems:

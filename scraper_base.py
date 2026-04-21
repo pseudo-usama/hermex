@@ -2,8 +2,8 @@ import sys
 import time
 import random
 import pyperclip
-from abc import ABC, abstractmethod
 from pathlib import Path
+from abc import ABC, abstractmethod
 from tempfile import TemporaryDirectory
 import undetected_chromedriver as uc
 from selenium.webdriver.common.keys import Keys
@@ -94,6 +94,18 @@ class Scraper(ABC):
                       Useful for long messages where typing is too slow.
         :param fake_typing: When paste=True, type dummy text first to avoid bot detection,
                             then replace it with the real message.
+        """
+
+    @abstractmethod
+    def get_last_response(self,
+                          get_markdown: bool = False,
+                          remove_watermark: bool = False) -> tuple[str | None, Path | None]:
+        """
+        Retrieve the last response from the chat interface.
+
+        :param get_markdown: If True, return the raw markdown source instead of plain text.
+        :param remove_watermark: If True, remove the watermark from any downloaded image.
+        :return: Tuple of (text_content, image_path), either may be None.
         """
 
     def _type_into(self, message: str, input_box: WebElement, submit=True):

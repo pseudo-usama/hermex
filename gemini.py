@@ -8,9 +8,9 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
 
 from scraper import Scraper
-from scraper.config import SHORT_WAIT
+from scraper.gemini_watermark_remover import gemini_remove_watermark
 from scraper.utils import copy_image_to_clipboard
-from scraper.config import SUPPORTED_IMAGE_EXTENSIONS
+from scraper.config import SUPPORTED_IMAGE_EXTENSIONS, SHORT_WAIT
 
 
 class GeminiScraper(Scraper):
@@ -44,9 +44,10 @@ class GeminiScraper(Scraper):
 
         return self
 
-    def get_last_response(self, get_markdown=False):
+    def get_last_response(self, get_markdown=False, remove_watermark=False):
         def _get_img(element: WebElement):
-            element.find_element(By.TAG_NAME, "download-generated-image-button").click()
+            element.find_element(By.TAG_NAME, "download-generated-image-button")\
+                .find_element(By.TAG_NAME, "button").click()
             img = self._get_downloaded_file()
             dest = self.download_dir / img.name
             move_file(img, dest)
@@ -84,8 +85,11 @@ class GeminiScraper(Scraper):
             print(f"Error getting image: {e}")
             img = None
 
+        if remove_watermark and img is not None:
+            gemini_remove_watermark(str(img), str(img))
+
         return text_content, img
-    
+
     def _upload_imgs(self, image_paths: list[str | Path], input_box: WebElement):
         # TODO: This upload method would not work in headless mode
         resolved = []
@@ -114,7 +118,6 @@ class GeminiScraper(Scraper):
             if aria_disabled == "false":
                 break
             self.sleep(1)
-
 
     def select_nano_banana(self, delay=SHORT_WAIT):
         """Select the Nano Banana model on the Gemini page"""
