@@ -1,11 +1,19 @@
 [project]
-name = "chatgpt_scraper"
+name = "janus"
 version = "0.1.0"
-description = "A package for ChatGPT"
+description = "A web scraper for LLM chatbot interfaces (ChatGPT, Gemini, etc.)"
 authors = [{name = "Usama (PSEUDO)", email = "pseudo.usama@gmail.com"}]
 dependencies = [
+    "selenium>=4.0.0",
+    "undetected-chromedriver>=3.5.0",
+    "pyperclip>=1.8.0",
+    "opencv-python>=4.0.0",
 ]
 
 [build-system]
 requires = ["setuptools>=61.0"]
 build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["scraper*"]
