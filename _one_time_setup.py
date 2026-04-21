@@ -1,4 +1,4 @@
-from scraper import ChatGPTScraper, GeminiScraper
+from janus import ChatGPTScraper, GeminiScraper
 
 
 try:

@@ -6,8 +6,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
 
-from scraper import Scraper
-from scraper.config import SHORT_WAIT
+from janus import Scraper
+from janus.config import SHORT_WAIT
 
 
 class ChatGPTScraper(Scraper):

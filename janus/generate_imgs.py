@@ -1,5 +1,5 @@
-from scraper import ChatGPTScraper, GeminiScraper
-from scraper.config import LONG_WAIT, generated_imgs_dir
+from janus import ChatGPTScraper, GeminiScraper
+from janus.config import LONG_WAIT, generated_imgs_dir
 
 
 def _identify_scraper(initial_url):

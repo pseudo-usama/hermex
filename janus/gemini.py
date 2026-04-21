@@ -7,10 +7,10 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
 
-from scraper import Scraper
-from scraper.gemini_watermark_remover import gemini_remove_watermark
-from scraper.utils import copy_image_to_clipboard
-from scraper.config import SUPPORTED_IMAGE_EXTENSIONS, SHORT_WAIT
+from janus import Scraper
+from janus.gemini_watermark_remover import gemini_remove_watermark
+from janus.utils import copy_image_to_clipboard
+from janus.config import SUPPORTED_IMAGE_EXTENSIONS, SHORT_WAIT
 
 
 class GeminiScraper(Scraper):

@@ -11,9 +11,9 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.remote.webelement import WebElement
 
-from scraper.adaptive_delay import wait as long_sleep
-from scraper.config import LONG_WAIT, SHORT_WAIT, chrome_data_dir, generated_imgs_dir
-from scraper.utils import get_user_agent
+from janus.adaptive_delay import wait as long_sleep
+from janus.config import LONG_WAIT, SHORT_WAIT, chrome_data_dir, generated_imgs_dir
+from janus.utils import get_user_agent
 
 
 class Scraper(ABC):
