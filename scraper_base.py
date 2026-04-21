@@ -13,6 +13,7 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from scraper.adaptive_delay import wait as long_sleep
 from scraper.config import LONG_WAIT, SHORT_WAIT, chrome_data_dir, generated_imgs_dir
+from scraper.utils import get_user_agent
 
 
 class Scraper(ABC):
@@ -20,9 +21,23 @@ class Scraper(ABC):
                  chrome_version=147,
                  download_dir=generated_imgs_dir,
                  headless=False,
-                 typing_delay=0.025):
+                 typing_delay=0.025,
+                 disable_web_security=True,
+                 chrome_data_dir=chrome_data_dir):
+        """
+        :param chrome_version: Chrome major version number to match the installed browser.
+        :param download_dir: Directory where downloaded files (e.g. generated images) are saved.
+        :param headless: Run the browser without a visible window.
+        :param typing_delay: Seconds between each keystroke when typing character-by-character.
+        :param disable_web_security: Pass --disable-web-security to Chrome. Needed for some
+            scrapers (e.g. ChatGPT, Gemini) but triggers bot detection on stricter sites — set
+            False for those.
+        :param chrome_data_dir: Path to a Chrome user-data directory for session persistence
+            (cookies, login state). Defaults to '~/scraper_chrome_profile'.
+        """
         self.chrome_data_dir = chrome_data_dir
         self.chrome_version = chrome_version
+        self.disable_web_security = disable_web_security
         self._temp_dir = TemporaryDirectory()
         self._selenium_download_dir = Path(self._temp_dir.name)
         self.download_dir = download_dir
@@ -41,13 +56,13 @@ class Scraper(ABC):
         options.add_argument("--enable-javascript")
         options.add_argument("--enable-cookies")
         options.add_argument("--no-sandbox")
-        options.add_argument("--disable-web-security")
-        options.add_argument("--allow-running-insecure-content")
+        if self.disable_web_security:
+            options.add_argument("--disable-web-security")
+            options.add_argument("--allow-running-insecure-content")
         options.add_argument("--disable-blink-features=AutomationControlled")
         options.add_argument("--disable-features=IsolateOrigins,site-per-process")
 
-        user_agent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36"
-        options.add_argument(f"--user-agent={user_agent}")
+        options.add_argument(f"--user-agent={get_user_agent(self.chrome_version)}")
 
         options.add_experimental_option("prefs", {
             "download.default_directory": str(self._selenium_download_dir),
