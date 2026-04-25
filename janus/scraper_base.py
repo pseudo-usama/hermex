@@ -12,18 +12,18 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.remote.webelement import WebElement
 
 from janus.adaptive_delay import wait as long_sleep
-from janus.config import LONG_WAIT, SHORT_WAIT, chrome_data_dir, generated_imgs_dir
+from janus.config import data_dir, LONG_WAIT, SHORT_WAIT
 from janus.utils import get_user_agent
 
 
 class Scraper(ABC):
     def __init__(self,
                  chrome_version=147,
-                 download_dir=generated_imgs_dir,
+                 download_dir=Path("."),
                  headless=False,
                  typing_delay=0.025,
                  disable_web_security=True,
-                 chrome_data_dir=chrome_data_dir):
+                 data_dir=data_dir):
         """
         :param chrome_version: Chrome major version number to match the installed browser.
         :param download_dir: Directory where downloaded files (e.g. generated images) are saved.
@@ -32,10 +32,11 @@ class Scraper(ABC):
         :param disable_web_security: Pass --disable-web-security to Chrome. Needed for some
             scrapers (e.g. ChatGPT, Gemini) but triggers bot detection on stricter sites — set
             False for those.
-        :param chrome_data_dir: Path to a Chrome user-data directory for session persistence
-            (cookies, login state). Defaults to '~/scraper_chrome_profile'.
+        :param data_dir: Root directory where Janus stores its data. Defaults to the
+            platform-appropriate data directory. Browser profiles are stored as subdirectories
+            within this path (e.g. data_dir/chrome_profile/).
         """
-        self.chrome_data_dir = chrome_data_dir
+        self.browser_profile_dir = Path(data_dir) / "chrome_profile"
         self.chrome_version = chrome_version
         self.disable_web_security = disable_web_security
         self._temp_dir = TemporaryDirectory()
@@ -52,7 +53,7 @@ class Scraper(ABC):
         options = uc.ChromeOptions()
         options.add_argument("--start-maximized")
         options.add_argument("--disable-notifications")
-        options.add_argument(f"--user-data-dir={self.chrome_data_dir}")  # Use persistent profile
+        options.add_argument(f"--user-data-dir={self.browser_profile_dir}")
         options.add_argument("--enable-javascript")
         options.add_argument("--enable-cookies")
         options.add_argument("--no-sandbox")
@@ -184,6 +185,14 @@ class Scraper(ABC):
 
         return self
 
+    def long_wait(self):
+        """Wait for the default long duration (5 minutes). Use after sending a prompt that triggers image generation or a slow response."""
+        return self.sleep(LONG_WAIT)
+
+    def short_wait(self):
+        """Wait for the default short duration (7 seconds). Use after UI interactions that need a moment to settle."""
+        return self.sleep(SHORT_WAIT)
+
     def refresh_page(self):
         self.driver.refresh()
         return self
@@ -232,7 +241,7 @@ class Scraper(ABC):
         :return: The text response from the chat interface.
         """
         scraper = cls().initialize_driver()
-        scraper.open_url().sleep(SHORT_WAIT)
+        scraper.open_url().short_wait()
         scraper.send_message(prompt).sleep(wait)
 
         text, _ = scraper.get_last_response()

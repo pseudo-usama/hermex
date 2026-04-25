@@ -1,5 +1,4 @@
 from janus import ChatGPTScraper, GeminiScraper
-from janus.config import LONG_WAIT, generated_imgs_dir
 
 
 def _identify_scraper(initial_url):
@@ -13,13 +12,12 @@ def _identify_scraper(initial_url):
 
 def generate_imgs_with_initial_prompt(initial_prompt,
                                       num_frames,
-                                      delay_between_messages=LONG_WAIT,
+                                      delay_between_messages=5*60,
                                       initial_url="https://chatgpt.com",
                                       headless=False):
     ScraperClass = _identify_scraper(initial_url)
 
     scraper: ChatGPTScraper | GeminiScraper = ScraperClass(
-        download_dir=generated_imgs_dir,
         headless=headless
     )
     chat_url = None
@@ -64,13 +62,12 @@ def generate_imgs_with_initial_prompt(initial_prompt,
 
 def generate_imgs_with_initial_prompt_and_n_prompts(initial_prompt,
                                                     prompts,
-                                                    delay_between_messages=LONG_WAIT,
+                                                    delay_between_messages=5*60,
                                                     initial_url="https://chatgpt.com",
                                                     headless=False):
     ScraperClass = _identify_scraper(initial_url)
 
     scraper: ChatGPTScraper | GeminiScraper = ScraperClass(
-        download_dir=generated_imgs_dir,
         headless=headless
     )
     chat_url = None
@@ -119,7 +116,6 @@ def generate_imgs_with_n_prompts(prompts,
                                  initial_url="https://chatgpt.com",
                                  headless=False):
     chatgpt = ChatGPTScraper(
-        download_dir=generated_imgs_dir,
         headless=headless
     )
     chat_url = None
