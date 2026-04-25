@@ -136,15 +136,13 @@ if __name__ == "__main__":
     scraper = GeminiScraper()
 
     try:
-        scraper.open_url("https://gemini.google.com")
-        scraper.sleep(2)
+        response = scraper.open_url("https://gemini.google.com") \
+            .sleep(2) \
+            .send_message("What is peft", paste=True) \
+            .sleep(60) \
+            .get_last_response(get_markdown=True)
 
-        initial_prompt = "What is peft"
-        scraper.send_message(initial_prompt, paste=True)
-        scraper.sleep(60)
-        response = scraper.get_last_response(get_markdown=True)
         print(f"Response: {response}")
-
         input("Press Enter to close the browser...")
     finally:
         scraper.close()

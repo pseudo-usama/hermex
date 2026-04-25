@@ -1,6 +1,8 @@
+import re
 import sys
 import time
 import random
+import subprocess
 import pyperclip
 from pathlib import Path
 from abc import ABC, abstractmethod
@@ -16,16 +18,23 @@ from janus.config import data_dir, LONG_WAIT, SHORT_WAIT
 from janus.utils import get_user_agent
 
 
+def _detect_chrome_version() -> int:
+    chrome = uc.find_chrome_executable()
+    out = subprocess.check_output([chrome, "--version"], text=True)
+    return int(re.search(r"(\d+)\.", out).group(1))
+
+
 class Scraper(ABC):
     def __init__(self,
-                 chrome_version=147,
+                 chrome_version=None,
                  download_dir=Path("."),
                  headless=False,
                  typing_delay=0.025,
                  disable_web_security=True,
                  data_dir=data_dir):
         """
-        :param chrome_version: Chrome major version number to match the installed browser.
+        :param chrome_version: Chrome major version number. Defaults to auto-detecting the
+            installed Chrome version.
         :param download_dir: Directory where downloaded files (e.g. generated images) are saved.
         :param headless: Run the browser without a visible window.
         :param typing_delay: Seconds between each keystroke when typing character-by-character.
@@ -37,7 +46,7 @@ class Scraper(ABC):
             within this path (e.g. data_dir/chrome_profile/).
         """
         self.browser_profile_dir = Path(data_dir) / "chrome_profile"
-        self.chrome_version = chrome_version
+        self.chrome_version = chrome_version or _detect_chrome_version()
         self.disable_web_security = disable_web_security
         self._temp_dir = TemporaryDirectory()
         self._selenium_download_dir = Path(self._temp_dir.name)
@@ -48,7 +57,7 @@ class Scraper(ABC):
 
         self.download_dir.mkdir(parents=True, exist_ok=True)
 
-    def initialize_driver(self):
+    def _initialize_driver(self):
         """Initialize and configure the Chrome driver"""
         options = uc.ChromeOptions()
         options.add_argument("--start-maximized")
@@ -87,7 +96,7 @@ class Scraper(ABC):
 
     def open_url(self, url=None):
         if not self.driver:
-            self.initialize_driver()
+            self._initialize_driver()
 
         self.driver.get(url)
 
@@ -240,7 +249,7 @@ class Scraper(ABC):
 
         :return: The text response from the chat interface.
         """
-        scraper = cls().initialize_driver()
+        scraper = cls()._initialize_driver()
         scraper.open_url().short_wait()
         scraper.send_message(prompt).sleep(wait)
 

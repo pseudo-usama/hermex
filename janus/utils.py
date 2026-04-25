@@ -1,7 +1,10 @@
 import re
 import sys
+import shutil
 import subprocess
 from pathlib import Path
+
+from janus.config import data_dir as _default_data_dir
 
 
 def get_user_agent(chrome_version: int) -> str:
@@ -42,6 +45,18 @@ def copy_image_to_clipboard(image_path: Path):
         raise NotImplementedError("Image clipboard not implemented for Linux.")
     else:
         raise NotImplementedError(f"Image clipboard not implemented for OS: {sys.platform}")
+
+
+def clear_data(data_dir=_default_data_dir):
+    """
+    Delete all data stored by Janus (browser profiles, etc.).
+
+    :param data_dir: Root data directory to remove. Defaults to the platform-appropriate
+        Janus data directory. Pass a custom path if you initialised scrapers with one.
+    """
+    data_dir = Path(data_dir).expanduser()
+    if data_dir.exists():
+        shutil.rmtree(data_dir)
 
 
 def list_and_sort_dir(path):
