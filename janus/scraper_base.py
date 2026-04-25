@@ -25,6 +25,8 @@ def _detect_chrome_version() -> int:
 
 
 class Scraper(ABC):
+    _state_error_tolerance = 20  # seconds of consecutive state-detection failures before giving up
+
     def __init__(self,
                  chrome_version=None,
                  download_dir=Path("."),
@@ -135,6 +137,68 @@ class Scraper(ABC):
         :param remove_watermark: If True, remove the watermark from any downloaded image.
         :return: Tuple of (text_content, image_path), either may be None.
         """
+
+    @abstractmethod
+    def _get_chatbot_state(self) -> str:
+        """
+        Return the current state of the chatbot UI.
+        Subclasses must return one of: 'generating', 'typing', 'idle'.
+        """
+
+    def wait_until_idle(self, timeout: float = LONG_WAIT) -> None:
+        """
+        Block until the chatbot has finished generating its response.
+
+        :param timeout: Maximum seconds to wait before raising TimeoutException.
+        """
+        start = time.time()
+        error_since = None
+        while time.time() - start < timeout:
+            try:
+                if self._get_chatbot_state() == 'idle':
+                    return
+                error_since = None
+            except Exception as e:
+                if error_since is None:
+                    error_since = time.time()
+                elif time.time() - error_since > self._state_error_tolerance:
+                    raise
+            time.sleep(1)
+        raise TimeoutException(f"Chatbot did not become idle within {timeout}s.")
+
+    def query(self,
+              message: str,
+              timeout: float = LONG_WAIT,
+              images: list[str | Path] = None,
+              paste: bool = False,
+              fake_typing: bool = True,
+              typing_delay: float = None,
+              get_markdown: bool = False,
+              remove_watermark: bool = False) -> tuple[str | None, Path | None]:
+        """
+        Send a message, wait for the response to complete, and return it.
+
+        :param message: Text to send.
+        :param timeout: Maximum seconds to wait for the response before raising TimeoutException.
+        :param images: List of image file paths to attach (platform-dependent).
+        :param paste: If True, paste the message instead of typing it character by character.
+                      Useful for long messages where typing is too slow.
+        :param fake_typing: When paste=True, type dummy text first to avoid bot detection,
+                            then replace it with the real message.
+        :param typing_delay: Seconds between each keystroke. Overrides the instance-level default.
+        :param get_markdown: If True, return the raw markdown source instead of plain text.
+        :param remove_watermark: If True, remove the watermark from any downloaded image.
+        :return: Tuple of (text_content, image_path), either may be None.
+        """
+        self.send_message(message,
+                          images=images,
+                          paste=paste,
+                          fake_typing=fake_typing,
+                          typing_delay=typing_delay)
+        self.wait_until_idle(timeout)
+        text, image = self.get_last_response(get_markdown=get_markdown,
+                                             remove_watermark=remove_watermark)
+        return text, image
 
     def _type_into(self, message: str, input_box: WebElement, submit=True, typing_delay: float = None):
         delay = typing_delay if typing_delay is not None else self.typing_delay

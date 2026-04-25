@@ -120,6 +120,22 @@ class GeminiScraper(Scraper):
                 break
             self.sleep(1)
 
+    def _get_chatbot_state(self) -> str:
+        input_area = self.driver.find_element(By.CSS_SELECTOR, '[data-node-type="input-area"]')
+
+        send_stop = input_area.find_element(
+            By.CSS_SELECTOR, '[aria-label="Send message"], [aria-label="Stop response"]'
+        )
+        if send_stop.get_attribute('aria-label') == 'Stop response':
+            return 'generating'
+
+        mic = input_area.find_element(By.CSS_SELECTOR, '[aria-label="Microphone"]')
+        container = mic.find_element(By.XPATH, 'ancestor::*[contains(@class, "mic-button-container")]')
+        if 'hidden' in container.get_attribute('class'):
+            return 'typing'
+
+        return 'idle'
+
     def select_nano_banana(self, delay=SHORT_WAIT):
         """Select the Nano Banana model on the Gemini page"""
         try:
@@ -138,9 +154,7 @@ if __name__ == "__main__":
     try:
         response = scraper.open_url("https://gemini.google.com") \
             .sleep(2) \
-            .send_message("What is peft", paste=True) \
-            .sleep(60) \
-            .get_last_response(get_markdown=True)
+            .query("What is peft", paste=True)
 
         print(f"Response: {response}")
         input("Press Enter to close the browser...")
