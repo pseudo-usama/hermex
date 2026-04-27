@@ -1,6 +1,5 @@
 from generate_imgs import generate_imgs_with_initial_prompt
 
-
 if __name__ == "__main__":
     # Example usage
     initial_prompt = "Create a series of images depicting a futuristic city."

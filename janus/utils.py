@@ -1,7 +1,7 @@
 import re
-import sys
 import shutil
 import subprocess
+import sys
 from pathlib import Path
 
 from janus.config import data_dir as _default_data_dir

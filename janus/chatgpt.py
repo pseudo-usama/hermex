@@ -1,14 +1,15 @@
 from pathlib import Path
 from shutil import move as move_file
-from selenium.common.exceptions import TimeoutException, NoSuchElementException
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.remote.webelement import WebElement
 
-from janus.scraper_base import Scraper
-from janus.models import Response
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.webdriver.common.by import By
+from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
+
 from janus.config import SHORT_WAIT
+from janus.models import Response
+from janus.scraper_base import Scraper
 
 
 class ChatGPT(Scraper):

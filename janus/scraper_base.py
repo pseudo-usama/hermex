@@ -1,21 +1,22 @@
+import random
 import re
+import subprocess
 import sys
 import time
-import random
-import subprocess
-from pathlib import Path
 from abc import ABC, abstractmethod
+from pathlib import Path
 from tempfile import TemporaryDirectory
+
 import undetected_chromedriver as uc
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.common.action_chains import ActionChains
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
 
 from janus.adaptive_delay import wait as long_sleep
-from janus.config import data_dir, LONG_WAIT, SHORT_WAIT
-from janus.utils import get_user_agent
+from janus.config import LONG_WAIT, SHORT_WAIT, data_dir
 from janus.models import Response
+from janus.utils import get_user_agent
 
 
 def _detect_chrome_version() -> int:

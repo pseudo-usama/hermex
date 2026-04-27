@@ -1,7 +1,7 @@
 # adaptive_wait.py
+import select
 import sys
 import time
-import select
 
 
 def _human(secs: float) -> str:
