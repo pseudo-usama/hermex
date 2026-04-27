@@ -19,16 +19,18 @@ class Gemini(Scraper):
         super().open_url(url)
         return self
 
-    def send_message(self,
-                     message: str,
-                     submit=True,
-                     images: list[str | Path] = None,
-                     paste=False,
-                     fake_typing=True,
-                     typing_delay: float = None):
+    def send_message(
+        self,
+        message: str,
+        submit=True,
+        images: list[str | Path] = None,
+        paste=False,
+        fake_typing=True,
+        typing_delay: float = None,
+    ):
         wait = WebDriverWait(self.driver, 20)
         input_box = wait.until(
-            EC.element_to_be_clickable((By.TAG_NAME, 'rich-textarea'))
+            EC.element_to_be_clickable((By.TAG_NAME, "rich-textarea"))
         )
 
         if images:
@@ -37,10 +39,16 @@ class Gemini(Scraper):
 
         input_box.click()
         self.sleep(0.5)
-        input_p = input_box.find_element(By.TAG_NAME, 'p')
+        input_p = input_box.find_element(By.TAG_NAME, "p")
 
         if paste:
-            self._paste_into(message, input_p, submit=submit, fake_typing=fake_typing, typing_delay=typing_delay)
+            self._paste_into(
+                message,
+                input_p,
+                submit=submit,
+                fake_typing=fake_typing,
+                typing_delay=typing_delay,
+            )
         else:
             self._type_into(message, input_p, submit=submit, typing_delay=typing_delay)
 
@@ -48,8 +56,9 @@ class Gemini(Scraper):
 
     def get_last_response(self, get_markdown=False, remove_watermark=False) -> Response:
         def _get_img(element: WebElement):
-            element.find_element(By.TAG_NAME, "download-generated-image-button")\
-                .find_element(By.TAG_NAME, "button").click()
+            element.find_element(
+                By.TAG_NAME, "download-generated-image-button"
+            ).find_element(By.TAG_NAME, "button").click()
             img = self._get_downloaded_file()
             dest = self.download_dir / img.name
             move_file(img, dest)
@@ -68,7 +77,7 @@ class Gemini(Scraper):
 
         wait = WebDriverWait(self.driver, 20)
         responses = wait.until(
-            EC.presence_of_all_elements_located((By.TAG_NAME, 'model-response'))
+            EC.presence_of_all_elements_located((By.TAG_NAME, "model-response"))
         )
         last_response = responses[-1]
 
@@ -96,7 +105,9 @@ class Gemini(Scraper):
         for image_path in image_paths:
             image_path = Path(image_path).resolve()
             if image_path.suffix.lower() not in SUPPORTED_IMAGE_EXTENSIONS:
-                raise ValueError(f"Unsupported file type '{image_path.suffix}'. Must be one of: {SUPPORTED_IMAGE_EXTENSIONS}")
+                raise ValueError(
+                    f"Unsupported file type '{image_path.suffix}'. Must be one of: {SUPPORTED_IMAGE_EXTENSIONS}"
+                )
             resolved.append(image_path)
 
         for image_path in resolved:
@@ -112,7 +123,9 @@ class Gemini(Scraper):
         for _ in range(max_wait):
             wait = WebDriverWait(self.driver, 20)
             send_button = wait.until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, 'button[aria-label="Send message"]'))
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, 'button[aria-label="Send message"]')
+                )
             )
             aria_disabled = send_button.get_attribute("aria-disabled")
             if aria_disabled == "false":
@@ -120,27 +133,34 @@ class Gemini(Scraper):
             self.sleep(1)
 
     def _get_chatbot_state(self) -> str:
-        input_area = self.driver.find_element(By.CSS_SELECTOR, '[data-node-type="input-area"]')
+        input_area = self.driver.find_element(
+            By.CSS_SELECTOR, '[data-node-type="input-area"]'
+        )
 
         send_stop = input_area.find_element(
             By.CSS_SELECTOR, '[aria-label="Send message"], [aria-label="Stop response"]'
         )
-        if send_stop.get_attribute('aria-label') == 'Stop response':
-            return 'generating'
+        if send_stop.get_attribute("aria-label") == "Stop response":
+            return "generating"
 
         mic = input_area.find_element(By.CSS_SELECTOR, '[aria-label="Microphone"]')
-        container = mic.find_element(By.XPATH, 'ancestor::*[contains(@class, "mic-button-container")]')
-        if 'hidden' in container.get_attribute('class'):
-            return 'typing'
+        container = mic.find_element(
+            By.XPATH, 'ancestor::*[contains(@class, "mic-button-container")]'
+        )
+        if "hidden" in container.get_attribute("class"):
+            return "typing"
 
-        return 'idle'
+        return "idle"
 
     def select_nano_banana(self, delay=SHORT_WAIT):
         """Select the Nano Banana model on the Gemini page"""
         try:
             self.driver.find_element(By.TAG_NAME, "toolbox-drawer").click()
             self.sleep(0.5)
-            self.driver.find_element(By.XPATH, "//div[contains(text(), 'Create images')]/ancestor::toolbox-drawer-item").click()
+            self.driver.find_element(
+                By.XPATH,
+                "//div[contains(text(), 'Create images')]/ancestor::toolbox-drawer-item",
+            ).click()
             self.sleep(delay)
         except Exception as e:
             print(f"Error selecting Nano Banana: {e}")

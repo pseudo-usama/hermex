@@ -3,6 +3,7 @@ import sys
 import time
 import select
 
+
 def _human(secs: float) -> str:
     secs = int(secs)
     if secs >= 3600:
@@ -13,6 +14,7 @@ def _human(secs: float) -> str:
         m, s = divmod(secs, 60)
         return f"{m}m {s}s"
     return f"{secs}s"
+
 
 def parse_duration(spec: str, default_unit: str = "m") -> float:
     spec = spec.strip().lower()
@@ -27,17 +29,20 @@ def parse_duration(spec: str, default_unit: str = "m") -> float:
     val = float(num)
     return val * {"s": 1, "m": 60, "h": 3600}[unit]
 
+
 def _read_line_nonblocking(timeout: float) -> str | None:
     r, _, _ = select.select([sys.stdin], [], [], timeout)
     if r:
         return sys.stdin.readline().rstrip("\n")
     return None
 
+
 def _drain_stdin():
     """Remove any pending lines already typed before we start waiting."""
     # Option 1: termios flush (fastest)
     try:
         import termios
+
         termios.tcflush(sys.stdin.fileno(), termios.TCIFLUSH)
         return
     except Exception:
@@ -49,11 +54,18 @@ def _drain_stdin():
             break
         sys.stdin.readline()
 
-def wait(seconds: float, *, poll: float = 0.5, default_unit: str = "m", clear_pending: bool = True) -> float:
+
+def wait(
+    seconds: float,
+    *,
+    poll: float = 0.5,
+    default_unit: str = "m",
+    clear_pending: bool = True,
+) -> float:
     seconds = max(0.0, seconds)
 
     if clear_pending:
-        _drain_stdin()   # <- NEW: swallow old Enters
+        _drain_stdin()  # <- NEW: swallow old Enters
 
     print(f"[wait] Waiting for {_human(seconds)} — (now, 2m, 30s)", flush=True, end=" ")
 
@@ -83,6 +95,7 @@ def wait(seconds: float, *, poll: float = 0.5, default_unit: str = "m", clear_pe
                     print(f"[ctl] override => {secs:.1f}s", flush=True)
 
     return time.time() - start
+
 
 def wait_minutes(minutes: float, **kw) -> float:
     return wait(minutes * 60.0, **kw)

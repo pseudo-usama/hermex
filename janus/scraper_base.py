@@ -25,15 +25,19 @@ def _detect_chrome_version() -> int:
 
 
 class Scraper(ABC):
-    _state_error_tolerance = 20  # seconds of consecutive state-detection failures before giving up
+    _state_error_tolerance = (
+        20  # seconds of consecutive state-detection failures before giving up
+    )
 
-    def __init__(self,
-                 chrome_version=None,
-                 download_dir=Path("."),
-                 headless=False,
-                 typing_delay=0.025,
-                 disable_web_security=True,
-                 data_dir=data_dir):
+    def __init__(
+        self,
+        chrome_version=None,
+        download_dir=Path("."),
+        headless=False,
+        typing_delay=0.025,
+        disable_web_security=True,
+        data_dir=data_dir,
+    ):
         """
         :param chrome_version: Chrome major version number. Defaults to auto-detecting the
             installed Chrome version.
@@ -76,12 +80,15 @@ class Scraper(ABC):
 
         options.add_argument(f"--user-agent={get_user_agent(self.chrome_version)}")
 
-        options.add_experimental_option("prefs", {
-            "download.default_directory": str(self._selenium_download_dir),
-            "download.prompt_for_download": False,
-            "download.directory_upgrade": True,
-            "safebrowsing.enabled": False
-        })
+        options.add_experimental_option(
+            "prefs",
+            {
+                "download.default_directory": str(self._selenium_download_dir),
+                "download.prompt_for_download": False,
+                "download.directory_upgrade": True,
+                "safebrowsing.enabled": False,
+            },
+        )
 
         if self.headless:
             options.add_argument("--headless")
@@ -90,9 +97,7 @@ class Scraper(ABC):
 
         # Create the undetected ChromeDriver with version matching your browser
         self.driver = uc.Chrome(
-            options=options, 
-            use_subprocess=True, 
-            version_main=self.chrome_version
+            options=options, use_subprocess=True, version_main=self.chrome_version
         )
         return self
 
@@ -105,13 +110,15 @@ class Scraper(ABC):
         return self
 
     @abstractmethod
-    def send_message(self,
-                     message: str,
-                     submit: bool = True,
-                     images: list[str | Path] = None,
-                     paste: bool = False,
-                     fake_typing: bool = True,
-                     typing_delay: float = None) -> "Scraper":
+    def send_message(
+        self,
+        message: str,
+        submit: bool = True,
+        images: list[str | Path] = None,
+        paste: bool = False,
+        fake_typing: bool = True,
+        typing_delay: float = None,
+    ) -> "Scraper":
         """
         Input a message into the chat, optionally attaching images.
 
@@ -127,9 +134,9 @@ class Scraper(ABC):
         """
 
     @abstractmethod
-    def get_last_response(self,
-                          get_markdown: bool = False,
-                          remove_watermark: bool = False) -> "Response":
+    def get_last_response(
+        self, get_markdown: bool = False, remove_watermark: bool = False
+    ) -> "Response":
         """
         Retrieve the last response from the chat interface.
 
@@ -155,7 +162,7 @@ class Scraper(ABC):
         error_since = None
         while time.time() - start < timeout:
             try:
-                if self._get_chatbot_state() == 'idle':
+                if self._get_chatbot_state() == "idle":
                     return
                 error_since = None
             except Exception as e:
@@ -166,15 +173,17 @@ class Scraper(ABC):
             time.sleep(1)
         raise TimeoutException(f"Chatbot did not become idle within {timeout}s.")
 
-    def query(self,
-              message: str,
-              timeout: float = LONG_WAIT,
-              images: list[str | Path] = None,
-              paste: bool = False,
-              fake_typing: bool = True,
-              typing_delay: float = None,
-              get_markdown: bool = False,
-              remove_watermark: bool = False) -> "Response":
+    def query(
+        self,
+        message: str,
+        timeout: float = LONG_WAIT,
+        images: list[str | Path] = None,
+        paste: bool = False,
+        fake_typing: bool = True,
+        typing_delay: float = None,
+        get_markdown: bool = False,
+        remove_watermark: bool = False,
+    ) -> "Response":
         """
         Send a message, wait for the response to complete, and return it.
 
@@ -190,22 +199,33 @@ class Scraper(ABC):
         :param remove_watermark: If True, remove the watermark from any downloaded image.
         :return: Response object with text and image fields (either may be None, but not both).
         """
-        self.send_message(message,
-                          images=images,
-                          paste=paste,
-                          fake_typing=fake_typing,
-                          typing_delay=typing_delay)
+        self.send_message(
+            message,
+            images=images,
+            paste=paste,
+            fake_typing=fake_typing,
+            typing_delay=typing_delay,
+        )
         self.wait_until_idle(timeout)
-        return self.get_last_response(get_markdown=get_markdown,
-                                      remove_watermark=remove_watermark)
+        return self.get_last_response(
+            get_markdown=get_markdown, remove_watermark=remove_watermark
+        )
 
-    def _type_into(self, message: str, input_box: WebElement, submit=True, typing_delay: float = None):
+    def _type_into(
+        self,
+        message: str,
+        input_box: WebElement,
+        submit=True,
+        typing_delay: float = None,
+    ):
         delay = typing_delay if typing_delay is not None else self.typing_delay
         for char in message:
-            if char == '\n':            # Handle Newline: Shift+Enter
+            if char == "\n":  # Handle Newline: Shift+Enter
                 input_box.send_keys(Keys.SHIFT, Keys.ENTER)
-            elif ord(char) > 0xFFFF:    # Handle Emojies
-                self.driver.execute_script("document.execCommand('insertText', false, arguments[0]);", char)
+            elif ord(char) > 0xFFFF:  # Handle Emojies
+                self.driver.execute_script(
+                    "document.execCommand('insertText', false, arguments[0]);", char
+                )
             else:
                 input_box.send_keys(char)
             self.sleep(delay)
@@ -217,12 +237,28 @@ class Scraper(ABC):
 
         return self
 
-    def _paste_into(self, message: str, input_box: WebElement, submit=True, fake_typing=True, typing_delay: float = None):
+    def _paste_into(
+        self,
+        message: str,
+        input_box: WebElement,
+        submit=True,
+        fake_typing=True,
+        typing_delay: float = None,
+    ):
         if fake_typing:
-            self._type_into("Some fake text... " * 20, input_box, submit=False, typing_delay=typing_delay)
-            self.driver.execute_script("document.execCommand('selectAll', false, null);")
+            self._type_into(
+                "Some fake text... " * 20,
+                input_box,
+                submit=False,
+                typing_delay=typing_delay,
+            )
+            self.driver.execute_script(
+                "document.execCommand('selectAll', false, null);"
+            )
 
-        self.driver.execute_script("document.execCommand('insertText', false, arguments[0]);", message)
+        self.driver.execute_script(
+            "document.execCommand('insertText', false, arguments[0]);", message
+        )
         self.sleep(2)
 
         if submit:
@@ -233,11 +269,13 @@ class Scraper(ABC):
     def _paste(self):
         self.driver.switch_to.window(self.driver.current_window_handle)
         self.driver.execute_script("window.focus();")
-        if sys.platform == 'darwin':
-            ActionChains(self.driver).key_down(Keys.COMMAND).send_keys('v').key_up(Keys.COMMAND).perform()
-        elif sys.platform == 'win32':
+        if sys.platform == "darwin":
+            ActionChains(self.driver).key_down(Keys.COMMAND).send_keys("v").key_up(
+                Keys.COMMAND
+            ).perform()
+        elif sys.platform == "win32":
             raise NotImplementedError("Paste not implemented for Windows.")
-        elif sys.platform.startswith('linux'):
+        elif sys.platform.startswith("linux"):
             raise NotImplementedError("Paste not implemented for Linux.")
         else:
             raise NotImplementedError(f"Paste not implemented for OS: {sys.platform}")
@@ -271,7 +309,7 @@ class Scraper(ABC):
         if only_base:
             return url.split("?")[0]
         return url
-    
+
     def _get_downloaded_file(self, wait_time=60):
         """Wait for a file to be downloaded and return its path"""
         elapsed = 0
@@ -325,7 +363,7 @@ class Scraper(ABC):
             f.write(f'<!DOCTYPE html><meta http-equiv="refresh" content="0;url={url}">')
 
         return self
-    
+
     @classmethod
     def simple_text_query(cls, prompt, wait=LONG_WAIT):
         """
@@ -337,20 +375,20 @@ class Scraper(ABC):
         :return: The text response from the chat interface.
         """
         scraper = cls()
-        response = scraper.open_url() \
-            .short_wait() \
-            .send_message(prompt) \
-            .sleep(wait) \
+        response = (
+            scraper.open_url()
+            .short_wait()
+            .send_message(prompt)
+            .sleep(wait)
             .get_last_response()
+        )
 
         scraper.close()
         return response.text
 
-    def n_prompts(self,
-                  prompts,
-                  delay=LONG_WAIT,
-                  final_delay=SHORT_WAIT,
-                  refresh=False):
+    def n_prompts(
+        self, prompts, delay=LONG_WAIT, final_delay=SHORT_WAIT, refresh=False
+    ):
         """
         Send multiple prompts to the chat interface.
 
@@ -369,9 +407,11 @@ class Scraper(ABC):
 
             response = self.get_last_response()
             responses.append(response)
-            print(f"Response {i+1}: ",
-                  "img," if response.image else "no image,",
-                  "text" if response.text else "no text")
+            print(
+                f"Response {i + 1}: ",
+                "img," if response.image else "no image,",
+                "text" if response.text else "no text",
+            )
 
             if refresh:
                 self.refresh_page()

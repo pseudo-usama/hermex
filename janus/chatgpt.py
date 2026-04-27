@@ -16,13 +16,15 @@ class ChatGPT(Scraper):
         super().open_url(url)
         return self
 
-    def send_message(self,
-                     message,
-                     submit=True,
-                     images: list[str | Path] = None,
-                     paste=False,
-                     fake_typing=True,
-                     typing_delay: float = None):
+    def send_message(
+        self,
+        message,
+        submit=True,
+        images: list[str | Path] = None,
+        paste=False,
+        fake_typing=True,
+        typing_delay: float = None,
+    ):
         if images:
             raise NotImplementedError("Image upload not implemented for ChatGPT.")
 
@@ -34,19 +36,27 @@ class ChatGPT(Scraper):
         self.sleep(0.5)
 
         if paste:
-            self._paste_into(message, input_box, submit=submit, fake_typing=fake_typing, typing_delay=typing_delay)
+            self._paste_into(
+                message,
+                input_box,
+                submit=submit,
+                fake_typing=fake_typing,
+                typing_delay=typing_delay,
+            )
         else:
-            self._type_into(message, input_box, submit=submit, typing_delay=typing_delay)
+            self._type_into(
+                message, input_box, submit=submit, typing_delay=typing_delay
+            )
 
         return self
 
-    def get_last_response(self,
-                          get_markdown=False,
-                          remove_watermark=False) -> Response:
+    def get_last_response(self, get_markdown=False, remove_watermark=False) -> Response:
         if get_markdown:
             raise NotImplementedError("get_markdown is not supported for ChatGPT yet.")
         if remove_watermark:
-            raise NotImplementedError("remove_watermark is not supported for ChatGPT yet.")
+            raise NotImplementedError(
+                "remove_watermark is not supported for ChatGPT yet."
+            )
 
         def _get_img(element: WebElement):
             image_elems = element.find_elements(By.CSS_SELECTOR, "img")
@@ -54,7 +64,14 @@ class ChatGPT(Scraper):
                 raise NoSuchElementException("No image element in this response.")
             image_elems[0].click()
             self.sleep(20)
-            down_btn = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "header.grid > div:nth-of-type(2) button:nth-of-type(4)")))
+            down_btn = wait.until(
+                EC.element_to_be_clickable(
+                    (
+                        By.CSS_SELECTOR,
+                        "header.grid > div:nth-of-type(2) button:nth-of-type(4)",
+                    )
+                )
+            )
             down_btn.click()
             self.sleep(5)
             img = list(self._selenium_download_dir.iterdir())[0]
@@ -99,9 +116,13 @@ class ChatGPT(Scraper):
         return Response(text=text_content, image=img)
 
     def _goto_model(self, model, delay=SHORT_WAIT):
-        self.driver.find_element(By.CSS_SELECTOR, f'header button[aria-label^="Model selector"]').click()
+        self.driver.find_element(
+            By.CSS_SELECTOR, 'header button[aria-label^="Model selector"]'
+        ).click()
         self.sleep(0.5)
-        self.driver.find_element(By.CSS_SELECTOR, f'div[data-testid="model-switcher-{model}"]').click()
+        self.driver.find_element(
+            By.CSS_SELECTOR, f'div[data-testid="model-switcher-{model}"]'
+        ).click()
         self.sleep(delay)
 
         return self
