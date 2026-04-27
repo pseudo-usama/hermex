@@ -42,11 +42,11 @@ def generate_imgs_with_initial_prompt(initial_prompt,
             scraper.send_message(f"good, now generate image no. {i+1}")
             scraper.sleep(delay_between_messages)
 
-            text, img = scraper.get_last_response()
-            responses.append({"text": text, "img": img})
+            response = scraper.get_last_response()
+            responses.append(response)
             print(f"Response {i+1}: ",
-                  "img," if img else "no image,",
-                  "text" if text else "no text")
+                  "img," if response.image else "no image,",
+                  "text" if response.text else "no text")
 
             if i < num_frames - 1:
                 scraper.refresh_page()
@@ -92,11 +92,11 @@ def generate_imgs_with_initial_prompt_and_n_prompts(initial_prompt,
             scraper.send_message(prompt)
             scraper.sleep(delay_between_messages)
 
-            text, img = scraper.get_last_response()
-            responses.append({"text": text, "img": img})
+            response = scraper.get_last_response()
+            responses.append(response)
             print(f"Response {i+1}: ",
-                  "img," if img else "no image,",
-                  "text" if text else "no text")
+                  "img," if response.image else "no image,",
+                  "text" if response.text else "no text")
 
             if i < len(prompts) - 1:
                 scraper.refresh_page()
@@ -132,11 +132,11 @@ def generate_imgs_with_n_prompts(prompts,
             chatgpt.send_message(prompt)
             chatgpt.sleep(delay_between_messages)
 
-            text, img = chatgpt.get_last_response()
-            responses.append({"text": text, "img": img})
+            response = chatgpt.get_last_response()
+            responses.append(response)
             print(f"Response {i+1}: ",
-                  "img," if img else "no image,",
-                  "text" if text else "no text")
+                  "img," if response.image else "no image,",
+                  "text" if response.text else "no text")
 
             if i < len(prompts) - 1:
                 chatgpt.refresh_page()

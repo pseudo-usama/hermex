@@ -15,6 +15,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from janus.adaptive_delay import wait as long_sleep
 from janus.config import data_dir, LONG_WAIT, SHORT_WAIT
 from janus.utils import get_user_agent
+from janus.models import Response
 
 
 def _detect_chrome_version() -> int:
@@ -128,13 +129,13 @@ class Scraper(ABC):
     @abstractmethod
     def get_last_response(self,
                           get_markdown: bool = False,
-                          remove_watermark: bool = False) -> tuple[str | None, Path | None]:
+                          remove_watermark: bool = False) -> "Response":
         """
         Retrieve the last response from the chat interface.
 
         :param get_markdown: If True, return the raw markdown source instead of plain text.
         :param remove_watermark: If True, remove the watermark from any downloaded image.
-        :return: Tuple of (text_content, image_path), either may be None.
+        :return: Response object with text and image fields (either may be None, but not both).
         """
 
     @abstractmethod
@@ -173,7 +174,7 @@ class Scraper(ABC):
               fake_typing: bool = True,
               typing_delay: float = None,
               get_markdown: bool = False,
-              remove_watermark: bool = False) -> tuple[str | None, Path | None]:
+              remove_watermark: bool = False) -> "Response":
         """
         Send a message, wait for the response to complete, and return it.
 
@@ -187,7 +188,7 @@ class Scraper(ABC):
         :param typing_delay: Seconds between each keystroke. Overrides the instance-level default.
         :param get_markdown: If True, return the raw markdown source instead of plain text.
         :param remove_watermark: If True, remove the watermark from any downloaded image.
-        :return: Tuple of (text_content, image_path), either may be None.
+        :return: Response object with text and image fields (either may be None, but not both).
         """
         self.send_message(message,
                           images=images,
@@ -195,9 +196,8 @@ class Scraper(ABC):
                           fake_typing=fake_typing,
                           typing_delay=typing_delay)
         self.wait_until_idle(timeout)
-        text, image = self.get_last_response(get_markdown=get_markdown,
-                                             remove_watermark=remove_watermark)
-        return text, image
+        return self.get_last_response(get_markdown=get_markdown,
+                                      remove_watermark=remove_watermark)
 
     def _type_into(self, message: str, input_box: WebElement, submit=True, typing_delay: float = None):
         delay = typing_delay if typing_delay is not None else self.typing_delay
@@ -337,14 +337,14 @@ class Scraper(ABC):
         :return: The text response from the chat interface.
         """
         scraper = cls()
-        text, _ = scraper.open_url() \
+        response = scraper.open_url() \
             .short_wait() \
             .send_message(prompt) \
             .sleep(wait) \
             .get_last_response()
 
         scraper.close()
-        return text
+        return response.text
 
     def n_prompts(self,
                   prompts,
@@ -367,11 +367,11 @@ class Scraper(ABC):
             print(f"Sending prompt {i + 1}/{len(prompts)}")
             self.send_message(prompt).sleep(delay)
 
-            text, img = self.get_last_response()
-            responses.append({ "text": text,"img": img })
+            response = self.get_last_response()
+            responses.append(response)
             print(f"Response {i+1}: ",
-                  "img," if img else "no image,",
-                  "text" if text else "no text")
+                  "img," if response.image else "no image,",
+                  "text" if response.text else "no text")
 
             if refresh:
                 self.refresh_page()

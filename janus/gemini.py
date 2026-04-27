@@ -1,13 +1,14 @@
 import pyperclip
 from pathlib import Path
 from shutil import move as move_file
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
 
 from janus.scraper_base import Scraper
+from janus.models import Response
 from janus.gemini_watermark_remover import gemini_remove_watermark
 from janus.utils import copy_image_to_clipboard
 from janus.config import SUPPORTED_IMAGE_EXTENSIONS, SHORT_WAIT
@@ -45,7 +46,7 @@ class Gemini(Scraper):
 
         return self
 
-    def get_last_response(self, get_markdown=False, remove_watermark=False):
+    def get_last_response(self, get_markdown=False, remove_watermark=False) -> Response:
         def _get_img(element: WebElement):
             element.find_element(By.TAG_NAME, "download-generated-image-button")\
                 .find_element(By.TAG_NAME, "button").click()
@@ -56,16 +57,11 @@ class Gemini(Scraper):
 
         def _get_text(element: WebElement, get_markdown):
             elem = element.find_element(By.CSS_SELECTOR, ".markdown")
-            if not elem:
-                raise TimeoutException("No text content found in the last response.")
-
             innerText = elem.text.strip()
             if innerText == "":
                 return None
-
             if not get_markdown:
                 return innerText
-
             element.find_element(By.TAG_NAME, "copy-button").click()
             self.sleep(0.5)
             return pyperclip.paste()
@@ -75,21 +71,24 @@ class Gemini(Scraper):
             EC.presence_of_all_elements_located((By.TAG_NAME, 'model-response'))
         )
         last_response = responses[-1]
+
         try:
             text_content = _get_text(last_response, get_markdown)
-        except Exception as e:
-            print(f"Error getting text content: {e}")
+        except NoSuchElementException:
             text_content = None
+
         try:
             img = _get_img(last_response)
-        except Exception as e:
-            print(f"Error getting image: {e}")
+        except NoSuchElementException:
             img = None
+
+        if text_content is None and img is None:
+            raise RuntimeError("Response contained neither text nor image.")
 
         if remove_watermark and img is not None:
             gemini_remove_watermark(str(img), str(img))
 
-        return text_content, img
+        return Response(text=text_content, image=img)
 
     def _upload_imgs(self, image_paths: list[str | Path], input_box: WebElement):
         # TODO: This upload method would not work in headless mode

@@ -1,3 +1,4 @@
+from janus.models import Response
 from janus.chatgpt import ChatGPT
 from janus.gemini import Gemini
 from janus.generate_imgs import (
@@ -7,6 +8,7 @@ from janus.generate_imgs import (
 )
 from janus.utils import clear_data
 __all__ = [
+    "Response",
     "ChatGPT",
     "Gemini",
     "generate_imgs_with_initial_prompt",
