@@ -3,7 +3,6 @@ import sys
 import time
 import random
 import subprocess
-import pyperclip
 from pathlib import Path
 from abc import ABC, abstractmethod
 from tempfile import TemporaryDirectory
@@ -205,9 +204,8 @@ class Scraper(ABC):
         for char in message:
             if char == '\n':            # Handle Newline: Shift+Enter
                 input_box.send_keys(Keys.SHIFT, Keys.ENTER)
-            elif ord(char) > 0xFFFF:    # Handle Emojis: Copy and Paste
-                pyperclip.copy(char)
-                self._paste()
+            elif ord(char) > 0xFFFF:    # Handle Emojies
+                self.driver.execute_script("document.execCommand('insertText', false, arguments[0]);", char)
             else:
                 input_box.send_keys(char)
             self.sleep(delay)
@@ -222,11 +220,9 @@ class Scraper(ABC):
     def _paste_into(self, message: str, input_box: WebElement, submit=True, fake_typing=True, typing_delay: float = None):
         if fake_typing:
             self._type_into("Some fake text... " * 20, input_box, submit=False, typing_delay=typing_delay)
-            input_box.send_keys(Keys.COMMAND, 'a')
-            input_box.send_keys(Keys.BACKSPACE)
+            self.driver.execute_script("document.execCommand('selectAll', false, null);")
 
-        pyperclip.copy(message)
-        self._paste()
+        self.driver.execute_script("document.execCommand('insertText', false, arguments[0]);", message)
         self.sleep(2)
 
         if submit:

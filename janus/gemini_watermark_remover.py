@@ -696,7 +696,3 @@ def gemini_remove_watermark(input_path: str, output_path: str):
 
     img[y:y+size, x:x+size] = final_roi.astype(np.uint8)
     cv2.imwrite(output_path, img)
-
-
-if __name__ == "__main__":
-    gemini_remove_watermark("input.jpg", "output.jpg")

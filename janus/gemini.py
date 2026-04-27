@@ -7,7 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.remote.webelement import WebElement
 
-from janus import Scraper
+from janus.scraper_base import Scraper
 from janus.gemini_watermark_remover import gemini_remove_watermark
 from janus.utils import copy_image_to_clipboard
 from janus.config import SUPPORTED_IMAGE_EXTENSIONS, SHORT_WAIT
