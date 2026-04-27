@@ -13,7 +13,7 @@ from janus.utils import copy_image_to_clipboard
 from janus.config import SUPPORTED_IMAGE_EXTENSIONS, SHORT_WAIT
 
 
-class GeminiScraper(Scraper):
+class Gemini(Scraper):
     def open_url(self, url="https://gemini.google.com"):
         super().open_url(url)
         return self
@@ -146,17 +146,3 @@ class GeminiScraper(Scraper):
         except Exception as e:
             print(f"Error selecting Nano Banana: {e}")
         return self
-
-
-if __name__ == "__main__":
-    scraper = GeminiScraper()
-
-    try:
-        response = scraper.open_url("https://gemini.google.com") \
-            .sleep(2) \
-            .query("What is peft", paste=True)
-
-        print(f"Response: {response}")
-        input("Press Enter to close the browser...")
-    finally:
-        scraper.close()

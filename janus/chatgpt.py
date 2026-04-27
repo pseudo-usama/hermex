@@ -10,7 +10,7 @@ from janus import Scraper
 from janus.config import SHORT_WAIT
 
 
-class ChatGPTScraper(Scraper):
+class ChatGPT(Scraper):
     def open_url(self, url="https://chatgpt.com"):
         super().open_url(url)
         return self
@@ -126,17 +126,3 @@ class ChatGPTScraper(Scraper):
 
     def turn_on_auto_model(self, delay=SHORT_WAIT):
         raise NotImplementedError("Not implemented yet")
-
-
-if __name__ == "__main__":
-    scraper = ChatGPTScraper()
-
-    try:
-        scraper.open_url()
-
-        initial_prompt = "Write a short poem about artificial intelligence"
-        scraper.send_message(initial_prompt)
-        
-        input("Press Enter to close the browser...")
-    finally:
-        scraper.close()

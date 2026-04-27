@@ -294,6 +294,33 @@ class Scraper(ABC):
             self.driver.quit()
             self.driver = None
 
+    @classmethod
+    def setup(cls):
+        """
+        One-time setup to establish a persistent browser session.
+
+        Opens a browser window for you to log in manually. Janus reuses this
+        session in all future runs, so you only need to do this once (or when
+        your session expires).
+
+        Why this is necessary: a brand-new browser profile with no history or
+        cookies is much more likely to be flagged as a bot. Logging in manually
+        and briefly using the site trains the profile to look like a real user,
+        which significantly reduces detection risk in subsequent automated runs.
+
+        Usage:
+            Gemini.setup()
+            ChatGPT.setup()
+        """
+        print("==> Opening browser. Please log in and browse around briefly.")
+        print("==> When you're done, come back here and press Enter to close.")
+        scraper = cls()
+        try:
+            scraper.open_url()
+            input("\nPress Enter to close the browser...")
+        finally:
+            scraper.close()
+
     def save_html_redirect(self, dir_path):
         url = self.get_current_url(only_base=True)
         dir_path.mkdir(parents=True, exist_ok=True)
@@ -313,13 +340,14 @@ class Scraper(ABC):
 
         :return: The text response from the chat interface.
         """
-        scraper = cls()._initialize_driver()
-        scraper.open_url().short_wait()
-        scraper.send_message(prompt).sleep(wait)
+        scraper = cls()
+        text, _ = scraper.open_url() \
+            .short_wait() \
+            .send_message(prompt) \
+            .sleep(wait) \
+            .get_last_response()
 
-        text, _ = scraper.get_last_response()
         scraper.close()
-
         return text
 
     def n_prompts(self,

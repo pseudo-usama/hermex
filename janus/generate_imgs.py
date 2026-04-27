@@ -1,11 +1,11 @@
-from janus import ChatGPTScraper, GeminiScraper
+from janus import ChatGPT, Gemini
 
 
 def _identify_scraper(initial_url):
     if "chatgpt" in initial_url:
-        return ChatGPTScraper
+        return ChatGPT
     elif "gemini" in initial_url:
-        return GeminiScraper
+        return Gemini
     else:
         raise ValueError("Unsupported URL for scraper identification.")
 
@@ -17,7 +17,7 @@ def generate_imgs_with_initial_prompt(initial_prompt,
                                       headless=False):
     ScraperClass = _identify_scraper(initial_url)
 
-    scraper: ChatGPTScraper | GeminiScraper = ScraperClass(
+    scraper: ChatGPT | Gemini = ScraperClass(
         headless=headless
     )
     chat_url = None
@@ -32,7 +32,7 @@ def generate_imgs_with_initial_prompt(initial_prompt,
         scraper.sleep(delay_between_messages)
 
         chat_url = scraper.get_current_url(only_base=True)
-        if ScraperClass == GeminiScraper:
+        if ScraperClass == Gemini:
             scraper.select_nano_banana()
 
         for i in range(num_frames):
@@ -67,7 +67,7 @@ def generate_imgs_with_initial_prompt_and_n_prompts(initial_prompt,
                                                     headless=False):
     ScraperClass = _identify_scraper(initial_url)
 
-    scraper: ChatGPTScraper | GeminiScraper = ScraperClass(
+    scraper: ChatGPT | Gemini = ScraperClass(
         headless=headless
     )
     chat_url = None
@@ -82,7 +82,7 @@ def generate_imgs_with_initial_prompt_and_n_prompts(initial_prompt,
         scraper.sleep(delay_between_messages)
 
         chat_url = scraper.get_current_url(only_base=True)
-        if ScraperClass == GeminiScraper:
+        if ScraperClass == Gemini:
             scraper.select_nano_banana()
 
         for i, prompt in enumerate(prompts):
@@ -115,7 +115,7 @@ def generate_imgs_with_n_prompts(prompts,
                                  delay_between_messages=5*60,
                                  initial_url="https://chatgpt.com",
                                  headless=False):
-    chatgpt = ChatGPTScraper(
+    chatgpt = ChatGPT(
         headless=headless
     )
     chat_url = None
