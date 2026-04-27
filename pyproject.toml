@@ -3,13 +3,17 @@ name = "janus"
 version = "0.1.0"
 description = "A web scraper for LLM chatbot interfaces (ChatGPT, Gemini, etc.)"
 authors = [{name = "Usama (PSEUDO)", email = "pseudo.usama@gmail.com"}]
+requires-python = ">=3.10"
 dependencies = [
-    "selenium>=4.0.0",
-    "undetected-chromedriver>=3.5.0",
-    "pyperclip>=1.8.0",
-    "opencv-python>=4.0.0",
-    "platformdirs>=4.0.0",
+    "selenium>=4.0",
+    "undetected-chromedriver>=3.5",
+    "pyperclip>=1.8",
+    "opencv-python>=4.0",
+    "platformdirs>=4.0",
 ]
+
+[project.optional-dependencies]
+dev = ["ruff"]
 
 [build-system]
 requires = ["setuptools>=61.0"]
@@ -18,3 +22,9 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools.packages.find]
 where = ["."]
 include = ["janus*"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]

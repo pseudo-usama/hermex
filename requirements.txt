@@ -1,7 +1,10 @@
+# Dev/local pinned environment — not the package's declared dependencies.
+# Install with: pip install -r requirements.txt
 # python=3.11.13
 selenium==4.38.0
-undetected_chromedriver==3.5.5
+undetected-chromedriver==3.5.5
 setuptools==80.9.0
 pyperclip==1.11.0
 opencv-python==4.13.0.92
 platformdirs==4.9.6
+ruff
