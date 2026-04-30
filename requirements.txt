@@ -7,4 +7,4 @@ setuptools==80.9.0
 pyperclip==1.11.0
 opencv-python==4.13.0.92
 platformdirs==4.9.6
-ruff
+ruff==0.15.12

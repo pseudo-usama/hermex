@@ -1,7 +1,6 @@
 import random
 import re
 import subprocess
-import sys
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
@@ -9,13 +8,12 @@ from tempfile import TemporaryDirectory
 
 import undetected_chromedriver as uc
 from selenium.common.exceptions import TimeoutException
-from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
 
 from janus.adaptive_delay import wait as long_sleep
 from janus.config import LONG_WAIT, SHORT_WAIT, data_dir
-from janus.models import Response
+from janus.models import Response, State
 from janus.utils import get_user_agent
 
 
@@ -40,17 +38,19 @@ class Scraper(ABC):
         data_dir=data_dir,
     ):
         """
-        :param chrome_version: Chrome major version number. Defaults to auto-detecting the
-            installed Chrome version.
-        :param download_dir: Directory where downloaded files (e.g. generated images) are saved.
+        :param chrome_version: Chrome major version number. Defaults to auto-detecting
+            the installed Chrome version.
+        :param download_dir: Directory where downloaded files (e.g. generated images)
+            are saved.
         :param headless: Run the browser without a visible window.
-        :param typing_delay: Seconds between each keystroke when typing character-by-character.
-        :param disable_web_security: Pass --disable-web-security to Chrome. Needed for some
-            scrapers (e.g. ChatGPT, Gemini) but triggers bot detection on stricter sites — set
-            False for those.
+        :param typing_delay: Seconds between each keystroke when typing
+            character-by-character.
+        :param disable_web_security: Pass --disable-web-security to Chrome. Needed for
+            some scrapers (e.g. ChatGPT, Gemini) but triggers bot detection on stricter
+            sites — set False for those.
         :param data_dir: Root directory where Janus stores its data. Defaults to the
-            platform-appropriate data directory. Browser profiles are stored as subdirectories
-            within this path (e.g. data_dir/chrome_profile/).
+            platform-appropriate data directory. Browser profiles are stored as
+            subdirectories within this path (e.g. data_dir/chrome_profile/).
         """
         self.browser_profile_dir = Path(data_dir) / "chrome_profile"
         self.chrome_version = chrome_version or _detect_chrome_version()
@@ -61,6 +61,7 @@ class Scraper(ABC):
         self.headless = headless
         self.driver = None
         self.typing_delay = typing_delay
+        self.is_logged_in = False
 
         self.download_dir.mkdir(parents=True, exist_ok=True)
 
@@ -102,13 +103,25 @@ class Scraper(ABC):
         )
         return self
 
-    def open_url(self, url=None):
+    def open_url(self, url=None, timeout=30):
+        """
+        Open a URL in the browser and wait for the page to be ready.
+
+        :param url: URL to navigate to.
+        :param timeout: Maximum seconds to wait for the page to be ready before raising
+            TimeoutException.
+        """
         if not self.driver:
             self._initialize_driver()
 
         self.driver.get(url)
+        self.wait_for_page_load(timeout)
 
         return self
+
+    @abstractmethod
+    def wait_for_page_load(self, timeout: float = 30) -> None:
+        """Wait until the page is ready to interact with."""
 
     @abstractmethod
     def send_message(
@@ -126,12 +139,13 @@ class Scraper(ABC):
         :param message: Text to send.
         :param submit: Whether to press Enter after composing the message.
         :param images: List of image file paths to attach before the message.
-        :param paste: If True, paste the message instead of typing it character by character.
-                      Useful for long messages where typing is too slow.
-        :param fake_typing: When paste=True, type dummy text first to avoid bot detection,
-                            then replace it with the real message.
-        :param typing_delay: Seconds between each keystroke. Overrides the instance-level
-                             default set in the constructor for this call only.
+        :param paste: If True, paste the message instead of typing it character by
+                      character. Useful for long messages where typing is too slow.
+        :param fake_typing: When paste=True, type dummy text first to avoid bot
+                            detection, then replace it with the real message.
+        :param typing_delay: Seconds between each keystroke. Overrides the
+                             instance-level default set in the constructor for this call
+                             only.
         """
 
     @abstractmethod
@@ -147,11 +161,41 @@ class Scraper(ABC):
         """
 
     @abstractmethod
-    def _get_chatbot_state(self) -> str:
+    def get_state(self) -> State:
         """
         Return the current state of the chatbot UI.
-        Subclasses must return one of: 'generating', 'typing', 'idle'.
+
+        Possible states:
+        - State.IDLE: the interface is ready and waiting for input.
+        - State.TYPING: the input box has content that has not been submitted yet.
+        - State.UPLOADING: a file upload is in progress.
+        - State.GENERATING: the model is actively generating a response.
+
+        :return: A State value representing the current UI state.
+        :raises Exception: if the state cannot be determined (e.g. expected DOM elements
+            are missing). Callers that need to tolerate transient failures should use
+            wait_until_idle() instead, which has built-in error tolerance.
         """
+
+    def _wait_until_state(
+        self, target: State, timeout: float = LONG_WAIT
+    ) -> None:
+        start = time.time()
+        error_since = None
+        while time.time() - start < timeout:
+            try:
+                if self.get_state() == target:
+                    return
+                error_since = None
+            except Exception:
+                if error_since is None:
+                    error_since = time.time()
+                elif time.time() - error_since > self._state_error_tolerance:
+                    raise
+            time.sleep(1)
+        raise TimeoutException(
+            f"Chatbot did not reach state '{target}' within {timeout}s."
+        )
 
     def wait_until_idle(self, timeout: float = LONG_WAIT) -> None:
         """
@@ -159,20 +203,7 @@ class Scraper(ABC):
 
         :param timeout: Maximum seconds to wait before raising TimeoutException.
         """
-        start = time.time()
-        error_since = None
-        while time.time() - start < timeout:
-            try:
-                if self._get_chatbot_state() == "idle":
-                    return
-                error_since = None
-            except Exception as e:
-                if error_since is None:
-                    error_since = time.time()
-                elif time.time() - error_since > self._state_error_tolerance:
-                    raise
-            time.sleep(1)
-        raise TimeoutException(f"Chatbot did not become idle within {timeout}s.")
+        self._wait_until_state("idle", timeout)
 
     def query(
         self,
@@ -216,7 +247,6 @@ class Scraper(ABC):
         self,
         message: str,
         input_box: WebElement,
-        submit=True,
         typing_delay: float = None,
     ):
         delay = typing_delay if typing_delay is not None else self.typing_delay
@@ -232,26 +262,18 @@ class Scraper(ABC):
             self.sleep(delay)
 
         self.sleep(2)
-
-        if submit:
-            input_box.send_keys("\n")
-
         return self
 
     def _paste_into(
         self,
         message: str,
         input_box: WebElement,
-        submit=True,
         fake_typing=True,
         typing_delay: float = None,
     ):
         if fake_typing:
             self._type_into(
-                "Some fake text... " * 20,
-                input_box,
-                submit=False,
-                typing_delay=typing_delay,
+                "Some fake text... " * 20, input_box, typing_delay=typing_delay
             )
             self.driver.execute_script(
                 "document.execCommand('selectAll', false, null);"
@@ -261,27 +283,17 @@ class Scraper(ABC):
             "document.execCommand('insertText', false, arguments[0]);", message
         )
         self.sleep(2)
-
-        if submit:
-            input_box.send_keys("\n")
-
         return self
 
-    def _paste(self):
-        self.driver.switch_to.window(self.driver.current_window_handle)
-        self.driver.execute_script("window.focus();")
-        if sys.platform == "darwin":
-            ActionChains(self.driver).key_down(Keys.COMMAND).send_keys("v").key_up(
-                Keys.COMMAND
-            ).perform()
-        elif sys.platform == "win32":
-            raise NotImplementedError("Paste not implemented for Windows.")
-        elif sys.platform.startswith("linux"):
-            raise NotImplementedError("Paste not implemented for Linux.")
-        else:
-            raise NotImplementedError(f"Paste not implemented for OS: {sys.platform}")
-
     def sleep(self, t):
+        """
+        Sleep for approximately t seconds, with a small random jitter to appear more human-like.
+
+        For durations over 40 seconds, uses an interruptible adaptive delay that allows the
+        user to skip or shorten the wait from the terminal.
+
+        :param t: Target sleep duration in seconds.
+        """
         if t > 40:
             long_sleep(t)
             return self
@@ -294,18 +306,26 @@ class Scraper(ABC):
         return self
 
     def long_wait(self):
-        """Wait for the default long duration (5 minutes). Use after sending a prompt that triggers image generation or a slow response."""
+        """Wait for the default long duration (5 minutes). Use after sending a prompt
+           that triggers image generation or a slow response."""
         return self.sleep(LONG_WAIT)
 
     def short_wait(self):
-        """Wait for the default short duration (7 seconds). Use after UI interactions that need a moment to settle."""
+        """Wait for the default short duration (7 seconds). Use after UI interactions
+           that need a moment to settle."""
         return self.sleep(SHORT_WAIT)
 
     def refresh_page(self):
+        """Reload the current page."""
         self.driver.refresh()
         return self
 
     def get_current_url(self, only_base=False):
+        """
+        Return the current browser URL.
+
+        :param only_base: If True, strip query parameters and return only the base URL.
+        """
         url = self.driver.current_url
         if only_base:
             return url.split("?")[0]

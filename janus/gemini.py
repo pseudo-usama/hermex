@@ -8,17 +8,36 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from janus.config import SHORT_WAIT, SUPPORTED_IMAGE_EXTENSIONS
+from janus.config import SUPPORTED_IMAGE_EXTENSIONS
+from janus.exceptions import LoginRequiredError
 from janus.gemini_watermark_remover import gemini_remove_watermark
-from janus.models import Response
+from janus.models import Response, State
 from janus.scraper_base import Scraper
-from janus.utils import copy_image_to_clipboard
 
 
 class Gemini(Scraper):
-    def open_url(self, url="https://gemini.google.com"):
-        super().open_url(url)
+    def open_url(self, url="https://gemini.google.com", timeout=30):
+        if "gemini.google.com" not in url:
+            raise ValueError(f"Expected a gemini.google.com URL, got: {url}")
+        super().open_url(url, timeout)
+        self._detect_login()
         return self
+
+    def wait_for_page_load(self, timeout: float = 30) -> None:
+        WebDriverWait(self.driver, timeout).until(
+            EC.presence_of_element_located((By.TAG_NAME, "rich-textarea"))
+        )
+
+    def _detect_login(self):
+        try:
+            WebDriverWait(self.driver, 3).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, 'a[aria-label="Sign in"]')
+                )
+            )
+            self.is_logged_in = False
+        except TimeoutException:
+            self.is_logged_in = True
 
     def send_message(
         self,
@@ -35,8 +54,12 @@ class Gemini(Scraper):
         )
 
         if images:
-            self._upload_imgs(images, input_box)
-            self.wait_until_send_button_enabled()
+            if not self.is_logged_in:
+                raise LoginRequiredError(
+                    "Image upload requires login. Run Gemini.setup() to log in."
+                )
+            self._upload_imgs(images)
+            print("uploading", self.get_state())
 
         input_box.click()
         self.sleep(0.5)
@@ -44,14 +67,16 @@ class Gemini(Scraper):
 
         if paste:
             self._paste_into(
-                message,
-                input_p,
-                submit=submit,
-                fake_typing=fake_typing,
-                typing_delay=typing_delay,
+                message, input_p, fake_typing=fake_typing, typing_delay=typing_delay
             )
         else:
-            self._type_into(message, input_p, submit=submit, typing_delay=typing_delay)
+            self._type_into(message, input_p, typing_delay=typing_delay)
+
+        if images:
+            self._wait_until_state(State.TYPING)
+
+        if submit:
+            input_p.send_keys("\n")
 
         return self
 
@@ -100,8 +125,7 @@ class Gemini(Scraper):
 
         return Response(text=text_content, image=img)
 
-    def _upload_imgs(self, image_paths: list[str | Path], input_box: WebElement):
-        # TODO: This upload method would not work in headless mode
+    def _upload_imgs(self, image_paths: list[str | Path]):
         resolved = []
         for image_path in image_paths:
             image_path = Path(image_path).resolve()
@@ -111,29 +135,44 @@ class Gemini(Scraper):
                 )
             resolved.append(image_path)
 
-        for image_path in resolved:
-            copy_image_to_clipboard(image_path)
-            self.sleep(0.3)
+        wait = WebDriverWait(self.driver, 10)
 
-            input_box.click()
-            self.sleep(0.5)
-            self._paste()
-            self.sleep(0.5)
+        # Gemini's JS calls input.click() internally when the upload menu item is clicked,
+        # which would open an OS file dialog we can't control. Patch the prototype before
+        # any clicks so that call is silently suppressed. The patch is restored after upload.
+        self.driver.execute_script("""
+            const orig = HTMLInputElement.prototype.click;
+            HTMLInputElement.prototype.click = function() {
+                if (this.type === 'file') return;
+                return orig.apply(this, arguments);
+            };
+            window.__restoreFileClick = () => { HTMLInputElement.prototype.click = orig; };
+        """)
 
-    def wait_until_send_button_enabled(self, max_wait=60):
-        for _ in range(max_wait):
-            wait = WebDriverWait(self.driver, 20)
-            send_button = wait.until(
-                EC.presence_of_element_located(
-                    (By.CSS_SELECTOR, 'button[aria-label="Send message"]')
-                )
+        self.driver.find_element(
+            By.CSS_SELECTOR,
+            '[data-node-type="input-area"] button[aria-label="Open upload file menu"]',
+        ).click()
+
+        # Clicking "Upload files" creates the hidden input[name="Filedata"] and triggers .click() on it.
+        wait.until(
+            EC.element_to_be_clickable(
+                (By.CSS_SELECTOR, '[data-test-id="local-images-files-uploader-button"]')
             )
-            aria_disabled = send_button.get_attribute("aria-disabled")
-            if aria_disabled == "false":
-                break
-            self.sleep(1)
+        ).click()
 
-    def _get_chatbot_state(self) -> str:
+        # The input is display:none — unhide it so Selenium accepts send_keys.
+        # send_keys on a file input bypasses the OS dialog entirely (ChromeDriver handles it internally).
+        file_input = wait.until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, 'input[name="Filedata"]'))
+        )
+        self.driver.execute_script("arguments[0].style.display = 'block';", file_input)
+        file_input.send_keys("\n".join(str(p) for p in resolved))
+        self.driver.execute_script(
+            "window.__restoreFileClick && window.__restoreFileClick();"
+        )
+
+    def get_state(self) -> State:
         input_area = self.driver.find_element(
             By.CSS_SELECTOR, '[data-node-type="input-area"]'
         )
@@ -141,28 +180,25 @@ class Gemini(Scraper):
         send_stop = input_area.find_element(
             By.CSS_SELECTOR, '[aria-label="Send message"], [aria-label="Stop response"]'
         )
+        # While generating, Gemini swaps the send button's aria-label to "Stop response".
         if send_stop.get_attribute("aria-label") == "Stop response":
-            return "generating"
+            return State.GENERATING
 
+        # During upload, the send button is disabled (aria-disabled="true") but still
+        # focusable (tabindex="0"). In IDLE the button is also disabled but tabindex="-1",
+        # so tabindex is the only signal that distinguishes the two states.
+        if (
+            send_stop.get_attribute("aria-disabled") == "true"
+            and send_stop.get_attribute("tabindex") == "0"
+        ):
+            return State.UPLOADING
+
+        # When the input has content, Gemini hides the mic button to reveal the send button.
         mic = input_area.find_element(By.CSS_SELECTOR, '[aria-label="Microphone"]')
         container = mic.find_element(
             By.XPATH, 'ancestor::*[contains(@class, "mic-button-container")]'
         )
         if "hidden" in container.get_attribute("class"):
-            return "typing"
+            return State.TYPING
 
-        return "idle"
-
-    def select_nano_banana(self, delay=SHORT_WAIT):
-        """Select the Nano Banana model on the Gemini page"""
-        try:
-            self.driver.find_element(By.TAG_NAME, "toolbox-drawer").click()
-            self.sleep(0.5)
-            self.driver.find_element(
-                By.XPATH,
-                "//div[contains(text(), 'Create images')]/ancestor::toolbox-drawer-item",
-            ).click()
-            self.sleep(delay)
-        except Exception as e:
-            print(f"Error selecting Nano Banana: {e}")
-        return self
+        return State.IDLE
