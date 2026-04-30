@@ -11,7 +11,6 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
 
-from janus.adaptive_delay import wait as long_sleep
 from janus.config import LONG_WAIT, SHORT_WAIT, data_dir
 from janus.models import Response, State
 from janus.utils import get_user_agent
@@ -289,15 +288,8 @@ class Scraper(ABC):
         """
         Sleep for approximately t seconds, with a small random jitter to appear more human-like.
 
-        For durations over 40 seconds, uses an interruptible adaptive delay that allows the
-        user to skip or shorten the wait from the terminal.
-
         :param t: Target sleep duration in seconds.
         """
-        if t > 40:
-            long_sleep(t)
-            return self
-
         minmax_factor = 0.2
         min_time = t - t * minmax_factor
         max_time = t + t * minmax_factor
@@ -376,70 +368,39 @@ class Scraper(ABC):
         finally:
             scraper.close()
 
-    def save_html_redirect(self, dir_path):
-        url = self.get_current_url(only_base=True)
-        dir_path.mkdir(parents=True, exist_ok=True)
-
-        with open(dir_path / "open_chat.html", "w") as f:
-            f.write(f'<!DOCTYPE html><meta http-equiv="refresh" content="0;url={url}">')
-
-        return self
-
     @classmethod
-    def simple_text_query(cls, prompt, wait=LONG_WAIT):
+    def simple_text_query(cls, prompt, timeout=LONG_WAIT):
         """
-        Send a text prompt to the chat interface.
+        Open the browser, send a text prompt, and return the response text.
 
         :param prompt: The prompt text to send.
-        :param wait: Time to wait for the response in seconds.
-
+        :param timeout: Maximum seconds to wait for the response.
         :return: The text response from the chat interface.
         """
         scraper = cls()
-        response = (
-            scraper.open_url()
-            .short_wait()
-            .send_message(prompt)
-            .sleep(wait)
-            .get_last_response()
-        )
-
+        response = scraper.open_url().short_wait().query(prompt, timeout=timeout)
         scraper.close()
         return response.text
 
-    def n_prompts(
-        self, prompts, delay=LONG_WAIT, final_delay=SHORT_WAIT, refresh=False
-    ):
+    def n_prompts(self, prompts, timeout=LONG_WAIT, refresh=False):
         """
-        Send multiple prompts to the chat interface.
+        Send multiple prompts sequentially and return their responses.
 
-        :param prompts: List of prompts to send.
-        :param delay: Delay between each prompt in seconds.
-        :param final_delay: Delay after the last prompt in seconds.
+        :param prompts: List of prompt strings to send.
+        :param timeout: Maximum seconds to wait for each response.
         :param refresh: Whether to refresh the page after each prompt.
-
-        :return: List of responses, each containing text and image (if available).
+        :return: List of Response objects.
         """
         responses = []
-
         for i, prompt in enumerate(prompts):
             print(f"Sending prompt {i + 1}/{len(prompts)}")
-            self.send_message(prompt).sleep(delay)
-
-            response = self.get_last_response()
+            response = self.query(prompt, timeout=timeout)
             responses.append(response)
             print(
                 f"Response {i + 1}: ",
                 "img," if response.image else "no image,",
                 "text" if response.text else "no text",
             )
-
             if refresh:
                 self.refresh_page()
-
-            if i < len(prompts) - 1:
-                self.sleep(delay)
-            else:
-                self.sleep(final_delay)
-
         return responses
