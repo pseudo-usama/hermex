@@ -15,7 +15,7 @@ jobs:
         with:
           python-version: "3.11"
 
-      - run: pip install ruff==0.6.9
+      - run: pip install ruff==0.15.12
 
       - name: Check formatting
         run: ruff format --check .
