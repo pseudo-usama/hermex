@@ -3,6 +3,7 @@ name = "hermex"
 version = "0.1.0"
 description = "A web scraper for LLM chatbot interfaces (ChatGPT, Gemini, etc.)"
 authors = [{name = "Usama (PSEUDO)", email = "pseudo.usama@gmail.com"}]
+license = {text = "MIT"}
 requires-python = ">=3.10"
 dependencies = [
     "selenium>=4.0",
