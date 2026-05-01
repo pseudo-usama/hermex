@@ -59,7 +59,6 @@ class Gemini(Scraper):
                     "Image upload requires login. Run Gemini.setup() to log in."
                 )
             self._upload_imgs(images)
-            print("uploading", self.get_state())
 
         input_box.click()
         self.sleep(0.5)
