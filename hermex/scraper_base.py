@@ -107,7 +107,6 @@ class Scraper(ABC):
             options.add_argument("--disable-gpu")
             options.add_argument("--window-size=1920,1080")
 
-        # Create the undetected ChromeDriver with version matching your browser
         self.driver = uc.Chrome(
             options=options, use_subprocess=True, version_main=self.chrome_version
         )
@@ -211,7 +210,7 @@ class Scraper(ABC):
 
         :param timeout: Maximum seconds to wait before raising TimeoutException.
         """
-        self._wait_until_state("idle", timeout)
+        self._wait_until_state(State.IDLE, timeout)
 
     def query(
         self,
