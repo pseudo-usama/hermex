@@ -4,7 +4,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-from janus.config import data_dir as _default_data_dir
+from hermex.config import data_dir as _default_data_dir
 
 
 def get_user_agent(chrome_version: int) -> str:

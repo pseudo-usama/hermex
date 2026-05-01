@@ -1,5 +1,5 @@
 [project]
-name = "janus"
+name = "hermex"
 version = "0.1.0"
 description = "A web scraper for LLM chatbot interfaces (ChatGPT, Gemini, etc.)"
 authors = [{name = "Usama (PSEUDO)", email = "pseudo.usama@gmail.com"}]
@@ -21,10 +21,10 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["janus*"]
+include = ["hermex*"]
 
 [tool.setuptools.package-data]
-janus = ["assets/*.png"]
+hermex = ["assets/*.png"]
 
 [tool.ruff]
 line-length = 88

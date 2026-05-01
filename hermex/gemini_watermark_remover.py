@@ -3,7 +3,7 @@ from importlib.resources import files
 import cv2
 import numpy as np
 
-_ASSETS_DIR = files("janus") / "assets"
+_ASSETS_DIR = files("hermex") / "assets"
 
 _alpha_map_small = None
 _alpha_map_large = None

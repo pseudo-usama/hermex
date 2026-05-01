@@ -11,9 +11,9 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
 
-from janus.config import LONG_WAIT, SHORT_WAIT, data_dir
-from janus.models import Response, State
-from janus.utils import get_user_agent
+from hermex.config import LONG_WAIT, SHORT_WAIT, data_dir
+from hermex.models import Response, State
+from hermex.utils import get_user_agent
 
 
 def _detect_chrome_version() -> int:

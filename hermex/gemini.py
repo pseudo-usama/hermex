@@ -8,11 +8,11 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from janus.config import SUPPORTED_IMAGE_EXTENSIONS
-from janus.exceptions import LoginRequiredError
-from janus.gemini_watermark_remover import gemini_remove_watermark
-from janus.models import Response, State
-from janus.scraper_base import Scraper
+from hermex.config import SUPPORTED_IMAGE_EXTENSIONS
+from hermex.exceptions import LoginRequiredError
+from hermex.gemini_watermark_remover import gemini_remove_watermark
+from hermex.models import Response, State
+from hermex.scraper_base import Scraper
 
 
 class Gemini(Scraper):
