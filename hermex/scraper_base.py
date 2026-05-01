@@ -11,9 +11,9 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
 
-from janus.config import LONG_WAIT, SHORT_WAIT, data_dir
-from janus.models import Response, State
-from janus.utils import get_user_agent
+from hermex.config import LONG_WAIT, SHORT_WAIT, data_dir
+from hermex.models import Response, State
+from hermex.utils import get_user_agent
 
 
 def _detect_chrome_version() -> int:
@@ -176,9 +176,7 @@ class Scraper(ABC):
             wait_until_idle() instead, which has built-in error tolerance.
         """
 
-    def _wait_until_state(
-        self, target: State, timeout: float = LONG_WAIT
-    ) -> None:
+    def _wait_until_state(self, target: State, timeout: float = LONG_WAIT) -> None:
         start = time.time()
         error_since = None
         while time.time() - start < timeout:
@@ -299,12 +297,12 @@ class Scraper(ABC):
 
     def long_wait(self):
         """Wait for the default long duration (5 minutes). Use after sending a prompt
-           that triggers image generation or a slow response."""
+        that triggers image generation or a slow response."""
         return self.sleep(LONG_WAIT)
 
     def short_wait(self):
         """Wait for the default short duration (7 seconds). Use after UI interactions
-           that need a moment to settle."""
+        that need a moment to settle."""
         return self.sleep(SHORT_WAIT)
 
     def refresh_page(self):

@@ -7,9 +7,9 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from janus.config import SHORT_WAIT
-from janus.models import Response
-from janus.scraper_base import Scraper
+from hermex.config import SHORT_WAIT
+from hermex.models import Response
+from hermex.scraper_base import Scraper
 
 
 class ChatGPT(Scraper):
