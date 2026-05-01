@@ -11,8 +11,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from hermex.config import SUPPORTED_IMAGE_EXTENSIONS
 from hermex.exceptions import LoginRequiredError
 from hermex.gemini_watermark_remover import gemini_remove_watermark
-from hermex.scraper_base import Scraper
 from hermex.models import Response, State
+from hermex.scraper_base import Scraper
 
 
 class Gemini(Scraper):
