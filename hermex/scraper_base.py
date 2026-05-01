@@ -368,7 +368,9 @@ class Scraper(ABC):
         Usage:
             Gemini.setup()
         """
-        print("==> Opening browser. Browse around briefly, then close the window when done.")
+        print(
+            "==> Opening browser. Browse around briefly, then close the window when done."
+        )
         scraper = cls()
         scraper.open_url()
         while True:
@@ -394,8 +396,10 @@ class Scraper(ABC):
         :return: Response object with text and image fields.
         """
         scraper = cls()
-        response = scraper.open_url().short_wait().query(
-            prompt, images=images, timeout=timeout
+        response = (
+            scraper.open_url()
+            .short_wait()
+            .query(prompt, images=images, timeout=timeout)
         )
         scraper.close()
         return response
