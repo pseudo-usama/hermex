@@ -23,6 +23,17 @@ def _detect_chrome_version() -> int:
 
 
 class Scraper(ABC):
+    """
+    Abstract base class for LLM chatbot scrapers.
+
+    Manages the Chrome browser lifecycle, simulated typing, file downloads,
+    and state polling. Subclasses implement the platform-specific DOM interactions
+    for a particular chatbot (e.g. Gemini, ChatGPT).
+
+    Use `Scraper.setup()` once to establish a persistent login session, then
+    instantiate the subclass directly for subsequent runs.
+    """
+
     _state_error_tolerance = (
         20  # seconds of consecutive state-detection failures before giving up
     )
@@ -47,7 +58,7 @@ class Scraper(ABC):
         :param disable_web_security: Pass --disable-web-security to Chrome. Needed for
             some scrapers (e.g. ChatGPT, Gemini) but triggers bot detection on stricter
             sites — set False for those.
-        :param data_dir: Root directory where Janus stores its data. Defaults to the
+        :param data_dir: Root directory where Hermex stores its data. Defaults to the
             platform-appropriate data directory. Browser profiles are stored as
             subdirectories within this path (e.g. data_dir/chrome_profile/).
         """
@@ -342,63 +353,50 @@ class Scraper(ABC):
     @classmethod
     def setup(cls):
         """
-        One-time setup to establish a persistent browser session.
+        First-time setup required before using Hermex.
 
-        Opens a browser window for you to log in manually. Janus reuses this
-        session in all future runs, so you only need to do this once (or when
-        your session expires).
+        Opens a browser window so you can browse around briefly. This builds a
+        browser profile that looks like a real user, which significantly reduces
+        bot detection risk in subsequent automated runs. Everyone must run this
+        at least once after installation.
 
-        Why this is necessary: a brand-new browser profile with no history or
-        cookies is much more likely to be flagged as a bot. Logging in manually
-        and briefly using the site trains the profile to look like a real user,
-        which significantly reduces detection risk in subsequent automated runs.
+        If you need login-gated features (e.g. image upload), log in
+        during this session. Hermex will reuse the saved session in all future
+        runs — repeat setup only if your session expires.
+
+        Close the browser window when done.
 
         Usage:
             Gemini.setup()
-            ChatGPT.setup()
         """
-        print("==> Opening browser. Please log in and browse around briefly.")
-        print("==> When you're done, come back here and press Enter to close.")
+        print("==> Opening browser. Browse around briefly, then close the window when done.")
         scraper = cls()
-        try:
-            scraper.open_url()
-            input("\nPress Enter to close the browser...")
-        finally:
-            scraper.close()
+        scraper.open_url()
+        while True:
+            try:
+                scraper.driver.window_handles
+                time.sleep(2)
+            except Exception:
+                break
+        scraper.close()
 
     @classmethod
-    def simple_text_query(cls, prompt, timeout=LONG_WAIT):
+    def simple_query(cls, prompt, images=None, timeout=LONG_WAIT):
         """
-        Open the browser, send a text prompt, and return the response text.
+        Open the browser, send a prompt, and return the response.
+
+        Convenience method for one-shot scripts that don't need a persistent
+        session. Opens the browser, sends the prompt, closes the browser, and
+        returns the full Response object.
 
         :param prompt: The prompt text to send.
+        :param images: Optional list of image file paths to attach.
         :param timeout: Maximum seconds to wait for the response.
-        :return: The text response from the chat interface.
+        :return: Response object with text and image fields.
         """
         scraper = cls()
-        response = scraper.open_url().short_wait().query(prompt, timeout=timeout)
+        response = scraper.open_url().short_wait().query(
+            prompt, images=images, timeout=timeout
+        )
         scraper.close()
-        return response.text
-
-    def n_prompts(self, prompts, timeout=LONG_WAIT, refresh=False):
-        """
-        Send multiple prompts sequentially and return their responses.
-
-        :param prompts: List of prompt strings to send.
-        :param timeout: Maximum seconds to wait for each response.
-        :param refresh: Whether to refresh the page after each prompt.
-        :return: List of Response objects.
-        """
-        responses = []
-        for i, prompt in enumerate(prompts):
-            print(f"Sending prompt {i + 1}/{len(prompts)}")
-            response = self.query(prompt, timeout=timeout)
-            responses.append(response)
-            print(
-                f"Response {i + 1}: ",
-                "img," if response.image else "no image,",
-                "text" if response.text else "no text",
-            )
-            if refresh:
-                self.refresh_page()
-        return responses
+        return response

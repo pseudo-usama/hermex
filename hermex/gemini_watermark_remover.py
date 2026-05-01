@@ -9,40 +9,43 @@ _alpha_map_small = None
 _alpha_map_large = None
 
 
+def _calc_alpha(img, size):
+    if img.shape[:2] != size:
+        img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)
+    return np.max(img, axis=2).astype(np.float32) / 255.0
+
+
+def _load_assets():
+    global _alpha_map_small, _alpha_map_large
+    if _alpha_map_small is not None:
+        return
+
+    bg_small = cv2.imread(str(_ASSETS_DIR / "bg_48.png"))
+    bg_large = cv2.imread(str(_ASSETS_DIR / "bg_96.png"))
+    if bg_small is None or bg_large is None:
+        raise ValueError(
+            f"Could not load watermark reference assets from {_ASSETS_DIR}."
+        )
+    _alpha_map_small = _calc_alpha(bg_small, (48, 48))
+    _alpha_map_large = _calc_alpha(bg_large, (96, 96))
+
+
+def _get_config(width, height):
+    if width > 1024 and height > 1024:
+        return {"margin": 64, "size": 96, "map": _alpha_map_large}
+    else:
+        return {"margin": 32, "size": 48, "map": _alpha_map_small}
+
+
 def gemini_remove_watermark(input_path: str, output_path: str):
-    def calc_alpha(img, size):
-        if img.shape[:2] != size:
-            img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)
-        return np.max(img, axis=2).astype(np.float32) / 255.0
-
-    def load_assets():
-        global _alpha_map_small, _alpha_map_large
-        if _alpha_map_small is not None:
-            return
-
-        bg_small = cv2.imread(str(_ASSETS_DIR / "bg_48.png"))
-        bg_large = cv2.imread(str(_ASSETS_DIR / "bg_96.png"))
-        if bg_small is None or bg_large is None:
-            raise ValueError(
-                f"Could not load watermark reference assets from {_ASSETS_DIR}."
-            )
-        _alpha_map_small = calc_alpha(bg_small, (48, 48))
-        _alpha_map_large = calc_alpha(bg_large, (96, 96))
-
-    def get_config(width, height):
-        if width > 1024 and height > 1024:
-            return {"margin": 64, "size": 96, "map": _alpha_map_large}
-        else:
-            return {"margin": 32, "size": 48, "map": _alpha_map_small}
-
-    load_assets()
+    _load_assets()
 
     img = cv2.imread(input_path)
     if img is None:
         raise ValueError(f"Could not read input image: {input_path}")
 
     h, w = img.shape[:2]
-    config = get_config(w, h)
+    config = _get_config(w, h)
     alpha_map = config["map"]
     size = config["size"]
     margin = config["margin"]

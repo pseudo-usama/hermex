@@ -13,6 +13,14 @@ from hermex.scraper_base import Scraper
 
 
 class ChatGPT(Scraper):
+    """
+    Scraper for ChatGPT (chatgpt.com).
+
+    Currently supports text queries only. Image upload and markdown retrieval
+    are not yet implemented. Not part of the public API — use Gemini instead
+    until this class is complete.
+    """
+
     def open_url(self, url="https://chatgpt.com", timeout=30):
         super().open_url(url, timeout)
         return self
