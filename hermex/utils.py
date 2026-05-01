@@ -41,5 +41,3 @@ def clear_data(data_dir=_default_data_dir):
     data_dir = Path(data_dir).expanduser()
     if data_dir.exists():
         shutil.rmtree(data_dir)
-
-
