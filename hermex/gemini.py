@@ -16,6 +16,17 @@ from hermex.scraper_base import Scraper
 
 
 class Gemini(Scraper):
+    """
+    Scraper for Google Gemini (gemini.google.com).
+
+    Supports text queries, image uploads, and downloading generated images.
+    Works in guest mode for basic text queries; image upload requires a
+    logged-in session established via `Gemini.setup()`.
+
+    Generated images are optionally post-processed to remove the Gemini
+    watermark via `remove_watermark=True` on `query()` or `get_last_response()`.
+    """
+
     def open_url(self, url="https://gemini.google.com", timeout=30):
         if "gemini.google.com" not in url:
             raise ValueError(f"Expected a gemini.google.com URL, got: {url}")
