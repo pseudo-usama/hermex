@@ -30,7 +30,6 @@ class Gemini(Scraper):
         if "gemini.google.com" not in url:
             raise ValueError(f"Expected a gemini.google.com URL, got: {url}")
         super().open_url(url, timeout)
-        self._detect_login()
         return self
 
     def wait_for_page_load(self, timeout: float = 30) -> None:

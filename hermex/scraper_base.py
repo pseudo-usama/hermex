@@ -126,12 +126,17 @@ class Scraper(ABC):
 
         self.driver.get(url)
         self.wait_for_page_load(timeout)
+        self._detect_login()
 
         return self
 
     @abstractmethod
     def wait_for_page_load(self, timeout: float = 30) -> None:
         """Wait until the page is ready to interact with."""
+
+    @abstractmethod
+    def _detect_login(self) -> None:
+        """Detect whether the user is logged in and set self.is_logged_in accordingly."""
 
     @abstractmethod
     def send_message(

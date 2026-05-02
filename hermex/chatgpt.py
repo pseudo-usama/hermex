@@ -23,8 +23,19 @@ class ChatGPT(Scraper):
     """
 
     def open_url(self, url="https://chatgpt.com", timeout=30):
+        if "chatgpt.com" not in url:
+            raise ValueError(f"Expected a chatgpt.com URL, got: {url}")
         super().open_url(url, timeout)
         return self
+
+    def _detect_login(self):
+        try:
+            self.driver.find_element(
+                By.CSS_SELECTOR, 'button[data-testid="login-button"]'
+            )
+            self.is_logged_in = False
+        except Exception:
+            self.is_logged_in = True
 
     def wait_for_page_load(self, timeout: float = 30) -> None:
         WebDriverWait(self.driver, timeout).until(
