@@ -1,14 +1,16 @@
 from pathlib import Path
-from shutil import move as move_file
 
+import pyperclip
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from hermex.config import SHORT_WAIT
-from hermex.models import Response
+from hermex.models import Response, State
 from hermex.scraper_base import Scraper
 
 
@@ -16,9 +18,8 @@ class ChatGPT(Scraper):
     """
     Scraper for ChatGPT (chatgpt.com).
 
-    Currently supports text queries only. Image upload and markdown retrieval
-    are not yet implemented. Not part of the public API — use Gemini instead
-    until this class is complete.
+    Currently supports text queries only. Image upload is not yet implemented.
+    Not part of the public API -- use Gemini instead until this class is complete.
     """
 
     def open_url(self, url="https://chatgpt.com", timeout=30):
@@ -63,47 +64,43 @@ class ChatGPT(Scraper):
 
         return self
 
+    def get_state(self) -> State:
+        raise NotImplementedError("get_state() is not yet implemented for ChatGPT.")
+
     def get_last_response(self, get_markdown=False, remove_watermark=False) -> Response:
-        if get_markdown:
-            raise NotImplementedError("get_markdown is not supported for ChatGPT yet.")
-        if remove_watermark:
-            raise NotImplementedError(
-                "remove_watermark is not supported for ChatGPT yet."
-            )
+        # ChatGPT does not watermark generated images, so remove_watermark is a no-op.
 
         def _get_img(element: WebElement):
             image_elems = element.find_elements(By.CSS_SELECTOR, "img")
             if not image_elems:
                 raise NoSuchElementException("No image element in this response.")
-            image_elems[0].click()
-            self.sleep(20)
+            self.driver.execute_script("arguments[0].click();", image_elems[0])
+            self.sleep(2)
             down_btn = wait.until(
-                EC.element_to_be_clickable(
-                    (
-                        By.CSS_SELECTOR,
-                        "header.grid > div:nth-of-type(2) button:nth-of-type(4)",
-                    )
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, 'header button[aria-label="Save"]')
                 )
             )
-            down_btn.click()
-            self.sleep(5)
-            img = list(self._selenium_download_dir.iterdir())[0]
-            dest = self.download_dir / img.name
-            move_file(img, dest)
-            # try:    # Press ESC key to close image dialog
-            #     actions = ActionChains(self.driver)
-            #     actions.send_keys('\ue00c')  # ESC key
-            #     actions.perform()
-            #     self.sleep(1)
-            # except Exception as e:
-            #     print(f"Error while pressing ESC key: {e}")
-            return dest
+            self.driver.execute_script("arguments[0].click();", down_btn)
+            img = self._get_downloaded_file()
+            self.sleep(1)
+            ActionChains(self.driver).send_keys(Keys.ESCAPE).perform()
+            self.sleep(0.5)
+            return img
 
-        def _get_text(element: WebElement):
+        def _get_text(element: WebElement, get_markdown: bool):
             elem = element.find_element(By.CSS_SELECTOR, ".markdown")
-            return elem.text
+            inner_text = elem.text.strip()
+            if inner_text == "":
+                return None
+            if not get_markdown:
+                return inner_text
+            element.find_element(By.CSS_SELECTOR, 'button[aria-label="Copy response"]').click()
+            self.sleep(0.5)
+            return pyperclip.paste()
 
-        wait = WebDriverWait(self.driver, 15)
+        wait = WebDriverWait(self.driver, 20)
+
         responses = wait.until(
             EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".agent-turn"))
         )
@@ -114,7 +111,7 @@ class ChatGPT(Scraper):
         last_response = responses[-1]
 
         try:
-            text_content = _get_text(last_response)
+            text_content = _get_text(last_response, get_markdown)
         except NoSuchElementException:
             text_content = None
 

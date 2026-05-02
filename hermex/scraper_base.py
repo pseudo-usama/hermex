@@ -4,6 +4,7 @@ import subprocess
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
+from shutil import move as move_file
 from tempfile import TemporaryDirectory
 
 import undetected_chromedriver as uc
@@ -335,12 +336,18 @@ class Scraper(ABC):
         """Wait for a file to be downloaded and return its path"""
         elapsed = 0
         poll_interval = 1
+
         while elapsed < wait_time:
             files = list(self._selenium_download_dir.iterdir())
             if files:
-                return files[0]
+                file = files[0]
+                dest = self.download_dir / file.name
+                move_file(file, dest)
+                return dest
+
             time.sleep(poll_interval)
             elapsed += poll_interval
+
         raise TimeoutException("File download timed out.")
 
     def close(self):

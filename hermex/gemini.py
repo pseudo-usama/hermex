@@ -1,5 +1,4 @@
 from pathlib import Path
-from shutil import move as move_file
 
 import pyperclip
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
@@ -96,17 +95,15 @@ class Gemini(Scraper):
                 By.TAG_NAME, "download-generated-image-button"
             ).find_element(By.TAG_NAME, "button").click()
             img = self._get_downloaded_file()
-            dest = self.download_dir / img.name
-            move_file(img, dest)
-            return dest
+            return img
 
         def _get_text(element: WebElement, get_markdown):
             elem = element.find_element(By.CSS_SELECTOR, ".markdown")
-            innerText = elem.text.strip()
-            if innerText == "":
+            inner_text = elem.text.strip()
+            if inner_text == "":
                 return None
             if not get_markdown:
-                return innerText
+                return inner_text
             element.find_element(By.TAG_NAME, "copy-button").click()
             self.sleep(0.5)
             return pyperclip.paste()
