@@ -1,10 +1,22 @@
 [project]
 name = "hermex"
 version = "0.1.0"
-description = "A web scraper for LLM chatbot interfaces (ChatGPT, Gemini, etc.)"
-authors = [{name = "Usama (PSEUDO)", email = "pseudo.usama@gmail.com"}]
+description = "Drive ChatGPT and Gemini from Python — no API keys, no billing, just the free web UI."
+authors = [{name = "Usama", email = "pseudo.usama@gmail.com"}]
+readme = "README.md"
 license = {text = "MIT"}
 requires-python = ">=3.11"
+keywords = ["chatgpt", "gemini", "llm", "scraper", "automation", "selenium", "browser"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Internet :: WWW/HTTP :: Browsers",
+]
 dependencies = [
     "selenium>=4.0",
     "undetected-chromedriver>=3.5",
@@ -13,8 +25,13 @@ dependencies = [
     "platformdirs>=4.0",
 ]
 
+[project.urls]
+Homepage = "https://hermex.usama.ai"
+Documentation = "https://hermex.usama.ai"
+Repository = "https://github.com/pseudo-usama/hermex"
+
 [project.optional-dependencies]
-dev = ["ruff"]
+dev = ["ruff", "mkdocs", "mkdocs-material", "mkdocstrings[python]"]
 
 [build-system]
 requires = ["setuptools>=61.0"]

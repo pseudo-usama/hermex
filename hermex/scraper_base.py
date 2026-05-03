@@ -2,6 +2,7 @@ import random
 import re
 import subprocess
 import time
+import warnings
 from abc import ABC, abstractmethod
 from pathlib import Path
 from shutil import move as move_file
@@ -12,15 +13,21 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
 
-from hermex.config import LONG_WAIT, SHORT_WAIT, data_dir
-from hermex.models import Response, State
+from hermex.config import LONG_WAIT, MIN_CHROME_VERSION, SHORT_WAIT
+from hermex.config import data_dir as _default_data_dir
+from hermex.models import AssistantMessage, State
 from hermex.utils import get_user_agent
 
 
 def _detect_chrome_version() -> int:
     chrome = uc.find_chrome_executable()
     out = subprocess.check_output([chrome, "--version"], text=True)
-    return int(re.search(r"(\d+)\.", out).group(1))
+    version = int(re.search(r"(\d+)\.", out).group(1))
+    if version < MIN_CHROME_VERSION:
+        raise RuntimeError(
+            f"Chrome {version} is not supported. Hermex requires Chrome {MIN_CHROME_VERSION} or higher."
+        )
+    return version
 
 
 class Scraper(ABC):
@@ -46,7 +53,7 @@ class Scraper(ABC):
         headless=False,
         typing_delay=0.025,
         disable_web_security=True,
-        data_dir=data_dir,
+        data_dir=None,
     ):
         """
         :param chrome_version: Chrome major version number. Defaults to auto-detecting
@@ -60,10 +67,14 @@ class Scraper(ABC):
             some scrapers (e.g. ChatGPT, Gemini) but triggers bot detection on stricter
             sites — set False for those.
         :param data_dir: Root directory where Hermex stores its data. Defaults to the
-            platform-appropriate data directory. Browser profiles are stored as
-            subdirectories within this path (e.g. data_dir/chrome_profile/).
+            platform-appropriate data directory (~/.local/share/hermex on Linux,
+            ~/Library/Application Support/hermex on macOS). Browser profiles are stored
+            as subdirectories within this path (e.g. data_dir/chrome_profile/).
         """
-        self.browser_profile_dir = Path(data_dir) / "chrome_profile"
+        if data_dir is None:
+            data_dir = _default_data_dir
+        self._data_dir = Path(data_dir)
+        self.browser_profile_dir = self._data_dir / "chrome_profile"
         self.chrome_version = chrome_version or _detect_chrome_version()
         self.disable_web_security = disable_web_security
         self._temp_dir = TemporaryDirectory()
@@ -75,6 +86,15 @@ class Scraper(ABC):
         self.is_logged_in = False
 
         self.download_dir.mkdir(parents=True, exist_ok=True)
+
+        if not (self._data_dir / f".setup_{self.__class__.__name__.lower()}").exists():
+            warnings.warn(
+                f"{self.__class__.__name__}.setup() has not been run. "
+                "It is strongly recommended to run it once before use — it builds a "
+                "browser profile that significantly reduces bot detection risk.",
+                UserWarning,
+                stacklevel=2,
+            )
 
     def _initialize_driver(self):
         """Initialize and configure the Chrome driver"""
@@ -166,13 +186,13 @@ class Scraper(ABC):
     @abstractmethod
     def get_last_response(
         self, get_markdown: bool = False, remove_watermark: bool = False
-    ) -> "Response":
+    ) -> "AssistantMessage":
         """
         Retrieve the last response from the chat interface.
 
         :param get_markdown: If True, return the raw markdown source instead of plain text.
         :param remove_watermark: If True, remove the watermark from any downloaded image.
-        :return: Response object with text and image fields (either may be None, but not both).
+        :return: AssistantMessage with text and image fields (either may be None, but not both).
         """
 
     @abstractmethod
@@ -192,7 +212,9 @@ class Scraper(ABC):
             wait_until_idle() instead, which has built-in error tolerance.
         """
 
-    def _wait_until_state(self, target: State, timeout: float = LONG_WAIT) -> None:
+    def _wait_until_state(self, target: State, timeout: float = None) -> None:
+        if timeout is None:
+            timeout = LONG_WAIT
         start = time.time()
         error_since = None
         while time.time() - start < timeout:
@@ -210,30 +232,30 @@ class Scraper(ABC):
             f"Chatbot did not reach state '{target}' within {timeout}s."
         )
 
-    def wait_until_idle(self, timeout: float = LONG_WAIT) -> None:
+    def wait_until_idle(self, timeout: float = None) -> None:
         """
         Block until the chatbot has finished generating its response.
 
-        :param timeout: Maximum seconds to wait before raising TimeoutException.
+        :param timeout: Maximum seconds to wait before raising TimeoutException. Defaults to 5 minutes.
         """
         self._wait_until_state(State.IDLE, timeout)
 
     def query(
         self,
         message: str,
-        timeout: float = LONG_WAIT,
+        timeout: float = None,
         images: list[str | Path] = None,
         paste: bool = False,
         fake_typing: bool = True,
         typing_delay: float = None,
         get_markdown: bool = False,
         remove_watermark: bool = False,
-    ) -> "Response":
+    ) -> "AssistantMessage":
         """
         Send a message, wait for the response to complete, and return it.
 
         :param message: Text to send.
-        :param timeout: Maximum seconds to wait for the response before raising TimeoutException.
+        :param timeout: Maximum seconds to wait for the response before raising TimeoutException. Defaults to 5 minutes.
         :param images: List of image file paths to attach (platform-dependent).
         :param paste: If True, paste the message instead of typing it character by character.
                       Useful for long messages where typing is too slow.
@@ -242,7 +264,7 @@ class Scraper(ABC):
         :param typing_delay: Seconds between each keystroke. Overrides the instance-level default.
         :param get_markdown: If True, return the raw markdown source instead of plain text.
         :param remove_watermark: If True, remove the watermark from any downloaded image.
-        :return: Response object with text and image fields (either may be None, but not both).
+        :return: AssistantMessage with text and image fields (either may be None, but not both).
         """
         self.send_message(
             message,
@@ -362,7 +384,7 @@ class Scraper(ABC):
             self.driver = None
 
     @classmethod
-    def setup(cls):
+    def setup(cls, data_dir=None):
         """
         First-time setup required before using Hermex.
 
@@ -377,13 +399,20 @@ class Scraper(ABC):
 
         Close the browser window when done.
 
+        :param data_dir: Must match the data_dir you pass to the constructor. Defaults
+            to the platform-appropriate data directory.
+
         Usage:
             Gemini.setup()
         """
+        if data_dir is None:
+            data_dir = _default_data_dir
         print(
             "==> Opening browser. Browse around briefly, then close the window when done."
         )
-        scraper = cls()
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            scraper = cls(data_dir=data_dir)
         scraper.open_url()
         while True:
             try:
@@ -393,19 +422,23 @@ class Scraper(ABC):
                 break
         scraper.close()
 
+        marker = Path(data_dir) / f".setup_{cls.__name__.lower()}"
+        marker.parent.mkdir(parents=True, exist_ok=True)
+        marker.touch()
+
     @classmethod
-    def simple_query(cls, prompt, images=None, timeout=LONG_WAIT):
+    def simple_query(cls, prompt, images=None, timeout=None):
         """
         Open the browser, send a prompt, and return the response.
 
         Convenience method for one-shot scripts that don't need a persistent
         session. Opens the browser, sends the prompt, closes the browser, and
-        returns the full Response object.
+        returns the full AssistantMessage.
 
         :param prompt: The prompt text to send.
         :param images: Optional list of image file paths to attach.
-        :param timeout: Maximum seconds to wait for the response.
-        :return: Response object with text and image fields.
+        :param timeout: Maximum seconds to wait for the response. Defaults to 5 minutes.
+        :return: AssistantMessage with text and image fields.
         """
         scraper = cls()
         response = (

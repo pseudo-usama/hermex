@@ -8,4 +8,7 @@ pyperclip==1.11.0
 opencv-python==4.13.0.92
 platformdirs==4.9.6
 ruff==0.15.12
+mkdocs==1.6.1
+mkdocs-material==9.7.6
+mkdocstrings[python]==1.0.4
 build==1.5.0
