@@ -18,8 +18,8 @@ class ChatGPT(Scraper):
     """
     Scraper for ChatGPT (chatgpt.com).
 
-    Currently supports text queries only. Image upload is not yet implemented.
-    Not part of the public API -- use Gemini instead until this class is complete.
+    Supports text queries, image uploads, and downloading generated images.
+    Works without login for all current features including image upload.
     """
 
     def open_url(self, url="https://chatgpt.com", timeout=30):
@@ -70,11 +70,11 @@ class ChatGPT(Scraper):
         else:
             self._type_into(message, input_box, typing_delay=typing_delay)
 
-        if submit:
-            input_box.send_keys("\n")
-
         if images:
             self._wait_until_state(State.TYPING)
+
+        if submit:
+            input_box.send_keys("\n")
 
         return self
 
