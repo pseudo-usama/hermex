@@ -1,0 +1,15 @@
+:root {
+  --md-primary-fg-color: #2DD4BF;
+  --md-primary-fg-color--light: #2DD4BF;
+  --md-primary-fg-color--dark: #2DD4BF;
+}
+
+/* Hide text title since the logo SVG already contains the name */
+.md-header__title {
+  display: none;
+}
+
+/* Make logo white on the teal header */
+.md-header__button.md-logo img {
+  filter: brightness(0) invert(1);
+}

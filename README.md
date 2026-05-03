@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.svg" alt="Hermex" width="450" style="margin: 24px 0;"/>
+  <img src="docs/assets/logo.svg" alt="Hermex" width="450" style="margin: 24px 0;"/>
   <br>
   <em>Drive ChatGPT and Gemini from Python — no API keys, no billing, just the free web UI.</em>
   <br><br>
@@ -22,7 +22,7 @@ response = ChatGPT.simple_query("What does this receipt say?", images=["receipt.
 print(response.text)
 ```
 
-It uses [undetected-chromedriver](https://github.com/ultrafunkamsterdam/undetected-chromedriver) under the hood to avoid bot detection, and reuses a persistent browser profile so your login session survives across runs.
+It uses undetected-chromedriver under the hood to avoid bot detection, and reuses a persistent browser profile so your login session survives across runs.
 
 ## Installation
 

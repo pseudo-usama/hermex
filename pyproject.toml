@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["ruff"]
+dev = ["ruff", "mkdocs", "mkdocs-material", "mkdocstrings[python]"]
 
 [build-system]
 requires = ["setuptools>=61.0"]
