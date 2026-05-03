@@ -88,49 +88,6 @@ class Gemini(Scraper):
 
         return self
 
-    def get_last_response(self, get_markdown=False, remove_watermark=False) -> Response:
-        def _get_img(element: WebElement):
-            element.find_element(
-                By.TAG_NAME, "download-generated-image-button"
-            ).find_element(By.TAG_NAME, "button").click()
-            img = self._get_downloaded_file()
-            return img
-
-        def _get_text(element: WebElement, get_markdown):
-            elem = element.find_element(By.CSS_SELECTOR, ".markdown")
-            inner_text = elem.text.strip()
-            if inner_text == "":
-                return None
-            if not get_markdown:
-                return inner_text
-            element.find_element(By.TAG_NAME, "copy-button").click()
-            self.sleep(0.5)
-            return pyperclip.paste()
-
-        wait = WebDriverWait(self.driver, 20)
-        responses = wait.until(
-            EC.presence_of_all_elements_located((By.TAG_NAME, "model-response"))
-        )
-        last_response = responses[-1]
-
-        try:
-            text_content = _get_text(last_response, get_markdown)
-        except NoSuchElementException:
-            text_content = None
-
-        try:
-            img = _get_img(last_response)
-        except NoSuchElementException:
-            img = None
-
-        if text_content is None and img is None:
-            raise RuntimeError("Response contained neither text nor image.")
-
-        if remove_watermark and img is not None:
-            gemini_remove_watermark(str(img), str(img))
-
-        return Response(text=text_content, image=img)
-
     def _upload_imgs(self, image_paths: list[str | Path]):
         resolved = []
         for image_path in image_paths:
@@ -177,6 +134,49 @@ class Gemini(Scraper):
         self.driver.execute_script(
             "window.__restoreFileClick && window.__restoreFileClick();"
         )
+
+    def get_last_response(self, get_markdown=False, remove_watermark=False) -> Response:
+        def _get_img(element: WebElement):
+            element.find_element(
+                By.TAG_NAME, "download-generated-image-button"
+            ).find_element(By.TAG_NAME, "button").click()
+            img = self._get_downloaded_file()
+            return img
+
+        def _get_text(element: WebElement, get_markdown):
+            elem = element.find_element(By.CSS_SELECTOR, ".markdown")
+            inner_text = elem.text.strip()
+            if inner_text == "":
+                return None
+            if not get_markdown:
+                return inner_text
+            element.find_element(By.TAG_NAME, "copy-button").click()
+            self.sleep(0.5)
+            return pyperclip.paste()
+
+        wait = WebDriverWait(self.driver, 20)
+        responses = wait.until(
+            EC.presence_of_all_elements_located((By.TAG_NAME, "model-response"))
+        )
+        last_response = responses[-1]
+
+        try:
+            text_content = _get_text(last_response, get_markdown)
+        except NoSuchElementException:
+            text_content = None
+
+        try:
+            img = _get_img(last_response)
+        except NoSuchElementException:
+            img = None
+
+        if text_content is None and img is None:
+            raise RuntimeError("Response contained neither text nor image.")
+
+        if remove_watermark and img is not None:
+            gemini_remove_watermark(str(img), str(img))
+
+        return Response(text=text_content, image=img)
 
     def get_state(self) -> State:
         input_area = self.driver.find_element(
