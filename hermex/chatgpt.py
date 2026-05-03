@@ -9,7 +9,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from hermex.config import SHORT_WAIT, SUPPORTED_IMAGE_EXTENSIONS
+from hermex.config import SUPPORTED_IMAGE_EXTENSIONS
 from hermex.models import Response, State
 from hermex.scraper_base import Scraper
 
@@ -164,29 +164,3 @@ class ChatGPT(Scraper):
 
         return State.IDLE
 
-    def _goto_model(self, model, delay=SHORT_WAIT):
-        self.driver.find_element(
-            By.CSS_SELECTOR, 'header button[aria-label^="Model selector"]'
-        ).click()
-        self.sleep(0.5)
-        self.driver.find_element(
-            By.CSS_SELECTOR, f'div[data-testid="model-switcher-{model}"]'
-        ).click()
-        self.sleep(delay)
-
-        return self
-
-    def goto_gpt4o(self, delay=SHORT_WAIT):
-        raise NotImplementedError("Not implemented yet")
-
-    def goto_o3(self, delay=SHORT_WAIT):
-        raise NotImplementedError("Not implemented yet")
-
-    def turn_on_thinking(self, delay=SHORT_WAIT):
-        raise NotImplementedError("Not implemented yet")
-
-    def turn_off_thinking(self, delay=SHORT_WAIT):
-        raise NotImplementedError("Not implemented yet")
-
-    def turn_on_auto_model(self, delay=SHORT_WAIT):
-        raise NotImplementedError("Not implemented yet")
