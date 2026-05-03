@@ -9,7 +9,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from hermex.config import SHORT_WAIT
+from hermex.config import SHORT_WAIT, SUPPORTED_IMAGE_EXTENSIONS
 from hermex.models import Response, State
 from hermex.scraper_base import Scraper
 
@@ -28,6 +28,13 @@ class ChatGPT(Scraper):
         super().open_url(url, timeout)
         return self
 
+    def wait_for_page_load(self, timeout: float = 30) -> None:
+        WebDriverWait(self.driver, timeout).until(
+            EC.presence_of_element_located(
+                (By.CSS_SELECTOR, 'div[contenteditable="true"]')
+            )
+        )
+
     def _detect_login(self):
         try:
             self.driver.find_element(
@@ -36,13 +43,6 @@ class ChatGPT(Scraper):
             self.is_logged_in = False
         except Exception:
             self.is_logged_in = True
-
-    def wait_for_page_load(self, timeout: float = 30) -> None:
-        WebDriverWait(self.driver, timeout).until(
-            EC.presence_of_element_located(
-                (By.CSS_SELECTOR, 'div[contenteditable="true"]')
-            )
-        )
 
     def send_message(
         self,
@@ -54,7 +54,7 @@ class ChatGPT(Scraper):
         typing_delay: float = None,
     ):
         if images:
-            raise NotImplementedError("Image upload not implemented for ChatGPT.")
+            self._upload_imgs(images)
 
         wait = WebDriverWait(self.driver, 20)
         input_box = wait.until(
@@ -73,10 +73,24 @@ class ChatGPT(Scraper):
         if submit:
             input_box.send_keys("\n")
 
+        if images:
+            self._wait_until_state(State.TYPING)
+
         return self
 
-    def get_state(self) -> State:
-        raise NotImplementedError("get_state() is not yet implemented for ChatGPT.")
+    def _upload_imgs(self, image_paths: list[str | Path]):
+        resolved = []
+        for image_path in image_paths:
+            image_path = Path(image_path).resolve()
+            if image_path.suffix.lower() not in SUPPORTED_IMAGE_EXTENSIONS:
+                raise ValueError(
+                    f"Unsupported file type '{image_path.suffix}'. Must be one of: {SUPPORTED_IMAGE_EXTENSIONS}"
+                )
+            resolved.append(image_path)
+
+        file_input = self.driver.find_element(By.CSS_SELECTOR, "#upload-photos")
+        self.driver.execute_script("arguments[0].style.display = 'block';", file_input)
+        file_input.send_keys("\n".join(str(p) for p in resolved))
 
     def get_last_response(self, get_markdown=False, remove_watermark=False) -> Response:
         # ChatGPT does not watermark generated images, so remove_watermark is a no-op.
@@ -135,6 +149,20 @@ class ChatGPT(Scraper):
             raise RuntimeError("Response contained neither text nor image.")
 
         return Response(text=text_content, image=img)
+
+    def get_state(self) -> State:
+        if self.driver.find_elements(By.CSS_SELECTOR, '[data-testid="stop-button"]'):
+            return State.GENERATING
+
+        send_btns = self.driver.find_elements(
+            By.CSS_SELECTOR, '[data-testid="send-button"]'
+        )
+        if send_btns:
+            if send_btns[0].get_attribute("disabled"):
+                return State.UPLOADING
+            return State.TYPING
+
+        return State.IDLE
 
     def _goto_model(self, model, delay=SHORT_WAIT):
         self.driver.find_element(
