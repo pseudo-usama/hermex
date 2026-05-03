@@ -13,7 +13,7 @@ from selenium.common.exceptions import TimeoutException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
 
-from hermex.config import LONG_WAIT, SHORT_WAIT
+from hermex.config import LONG_WAIT, MIN_CHROME_VERSION, SHORT_WAIT
 from hermex.config import data_dir as _default_data_dir
 from hermex.models import AssistantMessage, State
 from hermex.utils import get_user_agent
@@ -22,7 +22,12 @@ from hermex.utils import get_user_agent
 def _detect_chrome_version() -> int:
     chrome = uc.find_chrome_executable()
     out = subprocess.check_output([chrome, "--version"], text=True)
-    return int(re.search(r"(\d+)\.", out).group(1))
+    version = int(re.search(r"(\d+)\.", out).group(1))
+    if version < MIN_CHROME_VERSION:
+        raise RuntimeError(
+            f"Chrome {version} is not supported. Hermex requires Chrome {MIN_CHROME_VERSION} or higher."
+        )
+    return version
 
 
 class Scraper(ABC):

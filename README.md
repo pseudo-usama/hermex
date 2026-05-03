@@ -30,7 +30,7 @@ It uses undetected-chromedriver under the hood to avoid bot detection, and reuse
 pip install hermex
 ```
 
-Requires Python 3.11+ and Google Chrome.
+Requires Python 3.11+ and Google Chrome 130+.
 
 ## First-time setup
 

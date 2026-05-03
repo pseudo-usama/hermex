@@ -3,7 +3,7 @@
 ## Requirements
 
 - Python 3.11 or higher
-- Google Chrome installed on your system
+- Google Chrome 130 or higher
 
 ## Install
 
