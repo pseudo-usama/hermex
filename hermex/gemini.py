@@ -135,7 +135,9 @@ class Gemini(Scraper):
             "window.__restoreFileClick && window.__restoreFileClick();"
         )
 
-    def get_last_response(self, get_markdown=False, remove_watermark=False) -> AssistantMessage:
+    def get_last_response(
+        self, get_markdown=False, remove_watermark=False
+    ) -> AssistantMessage:
         def _get_img(element: WebElement):
             element.find_element(
                 By.TAG_NAME, "download-generated-image-button"

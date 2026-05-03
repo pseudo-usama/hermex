@@ -92,7 +92,9 @@ class ChatGPT(Scraper):
         self.driver.execute_script("arguments[0].style.display = 'block';", file_input)
         file_input.send_keys("\n".join(str(p) for p in resolved))
 
-    def get_last_response(self, get_markdown=False, remove_watermark=False) -> AssistantMessage:
+    def get_last_response(
+        self, get_markdown=False, remove_watermark=False
+    ) -> AssistantMessage:
         # ChatGPT does not watermark generated images, so remove_watermark is a no-op.
 
         wait = WebDriverWait(self.driver, 20)
