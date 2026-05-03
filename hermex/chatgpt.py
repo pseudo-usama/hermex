@@ -122,7 +122,9 @@ class ChatGPT(Scraper):
                 return None
             if not get_markdown:
                 return inner_text
-            element.find_element(By.CSS_SELECTOR, 'button[aria-label="Copy response"]').click()
+            element.find_element(
+                By.CSS_SELECTOR, 'button[aria-label="Copy response"]'
+            ).click()
             self.sleep(0.5)
             return pyperclip.paste()
 
