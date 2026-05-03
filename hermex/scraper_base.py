@@ -4,6 +4,7 @@ import subprocess
 import time
 from abc import ABC, abstractmethod
 from pathlib import Path
+from shutil import move as move_file
 from tempfile import TemporaryDirectory
 
 import undetected_chromedriver as uc
@@ -125,12 +126,17 @@ class Scraper(ABC):
 
         self.driver.get(url)
         self.wait_for_page_load(timeout)
+        self._detect_login()
 
         return self
 
     @abstractmethod
     def wait_for_page_load(self, timeout: float = 30) -> None:
         """Wait until the page is ready to interact with."""
+
+    @abstractmethod
+    def _detect_login(self) -> None:
+        """Detect whether the user is logged in and set self.is_logged_in accordingly."""
 
     @abstractmethod
     def send_message(
@@ -335,12 +341,18 @@ class Scraper(ABC):
         """Wait for a file to be downloaded and return its path"""
         elapsed = 0
         poll_interval = 1
+
         while elapsed < wait_time:
             files = list(self._selenium_download_dir.iterdir())
             if files:
-                return files[0]
+                file = files[0]
+                dest = self.download_dir / file.name
+                move_file(file, dest)
+                return dest
+
             time.sleep(poll_interval)
             elapsed += poll_interval
+
         raise TimeoutException("File download timed out.")
 
     def close(self):
