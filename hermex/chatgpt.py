@@ -95,6 +95,8 @@ class ChatGPT(Scraper):
     def get_last_response(self, get_markdown=False, remove_watermark=False) -> Response:
         # ChatGPT does not watermark generated images, so remove_watermark is a no-op.
 
+        wait = WebDriverWait(self.driver, 20)
+
         def _get_img(element: WebElement):
             image_elems = element.find_elements(By.CSS_SELECTOR, "img")
             if not image_elems:
@@ -124,8 +126,6 @@ class ChatGPT(Scraper):
             self.sleep(0.5)
             return pyperclip.paste()
 
-        wait = WebDriverWait(self.driver, 20)
-
         responses = wait.until(
             EC.presence_of_all_elements_located((By.CSS_SELECTOR, ".agent-turn"))
         )
@@ -154,13 +154,13 @@ class ChatGPT(Scraper):
         if self.driver.find_elements(By.CSS_SELECTOR, '[data-testid="stop-button"]'):
             return State.GENERATING
 
-        send_btns = self.driver.find_elements(
-            By.CSS_SELECTOR, '[data-testid="send-button"]'
-        )
-        if send_btns:
-            if send_btns[0].get_attribute("disabled"):
-                return State.UPLOADING
-            return State.TYPING
+        try:
+            send_btn = self.driver.find_element(
+                By.CSS_SELECTOR, '[data-testid="send-button"]'
+            )
+        except NoSuchElementException:
+            return State.IDLE
 
-        return State.IDLE
-
+        if send_btn.get_attribute("disabled"):
+            return State.UPLOADING
+        return State.TYPING
