@@ -10,7 +10,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from hermex.config import SUPPORTED_IMAGE_EXTENSIONS
 from hermex.exceptions import LoginRequiredError
 from hermex.gemini_watermark_remover import gemini_remove_watermark
-from hermex.models import Response, State
+from hermex.models import AssistantMessage, State
 from hermex.scraper_base import Scraper
 
 
@@ -135,7 +135,7 @@ class Gemini(Scraper):
             "window.__restoreFileClick && window.__restoreFileClick();"
         )
 
-    def get_last_response(self, get_markdown=False, remove_watermark=False) -> Response:
+    def get_last_response(self, get_markdown=False, remove_watermark=False) -> AssistantMessage:
         def _get_img(element: WebElement):
             element.find_element(
                 By.TAG_NAME, "download-generated-image-button"
@@ -176,7 +176,7 @@ class Gemini(Scraper):
         if remove_watermark and img is not None:
             gemini_remove_watermark(str(img), str(img))
 
-        return Response(text=text_content, image=img)
+        return AssistantMessage(text=text_content, image=img)
 
     def get_state(self) -> State:
         input_area = self.driver.find_element(

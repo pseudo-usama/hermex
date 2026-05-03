@@ -20,7 +20,7 @@ class State(str, Enum):
 
 
 @dataclass
-class Response:
+class AssistantMessage:
     """Result returned by `query()` and `get_last_response()`."""
 
     text: str | None = None

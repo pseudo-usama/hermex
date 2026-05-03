@@ -15,7 +15,7 @@ from selenium.webdriver.remote.webelement import WebElement
 
 from hermex.config import LONG_WAIT, SHORT_WAIT
 from hermex.config import data_dir as _default_data_dir
-from hermex.models import Response, State
+from hermex.models import AssistantMessage, State
 from hermex.utils import get_user_agent
 
 
@@ -181,13 +181,13 @@ class Scraper(ABC):
     @abstractmethod
     def get_last_response(
         self, get_markdown: bool = False, remove_watermark: bool = False
-    ) -> "Response":
+    ) -> "AssistantMessage":
         """
         Retrieve the last response from the chat interface.
 
         :param get_markdown: If True, return the raw markdown source instead of plain text.
         :param remove_watermark: If True, remove the watermark from any downloaded image.
-        :return: Response object with text and image fields (either may be None, but not both).
+        :return: AssistantMessage with text and image fields (either may be None, but not both).
         """
 
     @abstractmethod
@@ -245,7 +245,7 @@ class Scraper(ABC):
         typing_delay: float = None,
         get_markdown: bool = False,
         remove_watermark: bool = False,
-    ) -> "Response":
+    ) -> "AssistantMessage":
         """
         Send a message, wait for the response to complete, and return it.
 
@@ -259,7 +259,7 @@ class Scraper(ABC):
         :param typing_delay: Seconds between each keystroke. Overrides the instance-level default.
         :param get_markdown: If True, return the raw markdown source instead of plain text.
         :param remove_watermark: If True, remove the watermark from any downloaded image.
-        :return: Response object with text and image fields (either may be None, but not both).
+        :return: AssistantMessage with text and image fields (either may be None, but not both).
         """
         self.send_message(
             message,
@@ -428,12 +428,12 @@ class Scraper(ABC):
 
         Convenience method for one-shot scripts that don't need a persistent
         session. Opens the browser, sends the prompt, closes the browser, and
-        returns the full Response object.
+        returns the full AssistantMessage.
 
         :param prompt: The prompt text to send.
         :param images: Optional list of image file paths to attach.
         :param timeout: Maximum seconds to wait for the response. Defaults to 5 minutes.
-        :return: Response object with text and image fields.
+        :return: AssistantMessage with text and image fields.
         """
         scraper = cls()
         response = (

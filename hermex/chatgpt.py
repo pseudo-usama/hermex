@@ -10,7 +10,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from hermex.config import SUPPORTED_IMAGE_EXTENSIONS
-from hermex.models import Response, State
+from hermex.models import AssistantMessage, State
 from hermex.scraper_base import Scraper
 
 
@@ -92,7 +92,7 @@ class ChatGPT(Scraper):
         self.driver.execute_script("arguments[0].style.display = 'block';", file_input)
         file_input.send_keys("\n".join(str(p) for p in resolved))
 
-    def get_last_response(self, get_markdown=False, remove_watermark=False) -> Response:
+    def get_last_response(self, get_markdown=False, remove_watermark=False) -> AssistantMessage:
         # ChatGPT does not watermark generated images, so remove_watermark is a no-op.
 
         wait = WebDriverWait(self.driver, 20)
@@ -150,7 +150,7 @@ class ChatGPT(Scraper):
         if text_content is None and img is None:
             raise RuntimeError("Response contained neither text nor image.")
 
-        return Response(text=text_content, image=img)
+        return AssistantMessage(text=text_content, image=img)
 
     def get_state(self) -> State:
         if self.driver.find_elements(By.CSS_SELECTOR, '[data-testid="stop-button"]'):
