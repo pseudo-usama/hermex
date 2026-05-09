@@ -300,7 +300,7 @@ class Scraper(ABC):
         for char in message:
             if char == "\n":  # Handle Newline: Shift+Enter
                 input_box.send_keys(Keys.SHIFT, Keys.ENTER)
-            elif ord(char) > 0xFFFF:  # Handle Emojies
+            elif ord(char) > 0xFFFF:  # Handle Emojis
                 self.driver.execute_script(
                     "document.execCommand('insertText', false, arguments[0]);", char
                 )
@@ -410,7 +410,7 @@ class Scraper(ABC):
         bot detection risk in subsequent automated runs. Everyone must run this
         at least once after installation.
 
-        If you need login-gated features (e.g. image upload), log in
+        If you need login-gated features (e.g. file upload), log in
         during this session. Hermex will reuse the saved session in all future
         runs — repeat setup only if your session expires.
 
