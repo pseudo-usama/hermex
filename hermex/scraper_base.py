@@ -9,7 +9,7 @@ from shutil import move as move_file
 from tempfile import TemporaryDirectory
 
 import undetected_chromedriver as uc
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, WebDriverException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -21,8 +21,18 @@ from hermex.utils import get_user_agent
 
 def _detect_chrome_version() -> int:
     chrome = uc.find_chrome_executable()
-    out = subprocess.check_output([chrome, "--version"], text=True)
-    version = int(re.search(r"(\d+)\.", out).group(1))
+    if not chrome:
+        raise RuntimeError(
+            "Chrome executable not found. Please install Google Chrome and ensure it is in your PATH."
+        )
+    try:
+        out = subprocess.check_output([chrome, "--version"], text=True)
+    except (subprocess.SubprocessError, OSError) as e:
+        raise RuntimeError(f"Failed to detect Chrome version: {e}") from e
+    match = re.search(r"(\d+)\.", out)
+    if not match:
+        raise RuntimeError(f"Could not parse Chrome version from: {out!r}")
+    version = int(match.group(1))
     if version < MIN_CHROME_VERSION:
         raise RuntimeError(
             f"Chrome {version} is not supported. Hermex requires Chrome {MIN_CHROME_VERSION} or higher."
@@ -367,7 +377,7 @@ class Scraper(ABC):
         poll_interval = 1
 
         while elapsed < wait_time:
-            files = list(self._selenium_download_dir.iterdir())
+            files = [f for f in self._selenium_download_dir.iterdir() if f.suffix != ".crdownload"]
             if files:
                 file = files[0]
                 dest = self.download_dir / file.name
@@ -384,6 +394,7 @@ class Scraper(ABC):
         if self.driver:
             self.driver.quit()
             self.driver = None
+        self._temp_dir.cleanup()
 
     @classmethod
     def setup(cls, data_dir=None):
@@ -416,13 +427,17 @@ class Scraper(ABC):
             warnings.simplefilter("ignore", UserWarning)
             scraper = cls(data_dir=data_dir)
         scraper.open_url()
-        while True:
-            try:
-                scraper.driver.window_handles
-                time.sleep(2)
-            except Exception:
-                break
-        scraper.close()
+        try:
+            while True:
+                try:
+                    scraper.driver.window_handles
+                    time.sleep(2)
+                except WebDriverException:
+                    # WebDriverException is the expected signal that the user closed
+                    # the browser window
+                    break
+        finally:
+            scraper.close()
 
         marker = Path(data_dir) / f".setup_{cls.__name__.lower()}"
         marker.parent.mkdir(parents=True, exist_ok=True)
@@ -443,10 +458,12 @@ class Scraper(ABC):
         :return: AssistantMessage with text and image fields.
         """
         scraper = cls()
-        response = (
-            scraper.open_url()
-            .short_wait()
-            .query(prompt, attachments=attachments, timeout=timeout)
-        )
-        scraper.close()
+        try:
+            response = (
+                scraper.open_url()
+                .short_wait()
+                .query(prompt, attachments=attachments, timeout=timeout)
+            )
+        finally:
+            scraper.close()
         return response
