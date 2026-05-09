@@ -163,17 +163,18 @@ class Scraper(ABC):
         self,
         message: str,
         submit: bool = True,
-        images: list[str | Path] = None,
+        attachments: list[str | Path] = None,
         paste: bool = False,
         fake_typing: bool = True,
         typing_delay: float = None,
     ) -> "Scraper":
         """
-        Input a message into the chat, optionally attaching images.
+        Input a message into the chat, optionally attaching files.
 
         :param message: Text to send.
         :param submit: Whether to press Enter after composing the message.
-        :param images: List of image file paths to attach before the message.
+        :param attachments: List of file paths to attach before the message. See
+                            ``SUPPORTED_ATTACHMENTS`` on the class for allowed types.
         :param paste: If True, paste the message instead of typing it character by
                       character. Useful for long messages where typing is too slow.
         :param fake_typing: When paste=True, type dummy text first to avoid bot
@@ -244,7 +245,7 @@ class Scraper(ABC):
         self,
         message: str,
         timeout: float = None,
-        images: list[str | Path] = None,
+        attachments: list[str | Path] = None,
         paste: bool = False,
         fake_typing: bool = True,
         typing_delay: float = None,
@@ -256,7 +257,8 @@ class Scraper(ABC):
 
         :param message: Text to send.
         :param timeout: Maximum seconds to wait for the response before raising TimeoutException. Defaults to 5 minutes.
-        :param images: List of image file paths to attach (platform-dependent).
+        :param attachments: List of file paths to attach. See
+                            ``SUPPORTED_ATTACHMENTS`` on the class for allowed types.
         :param paste: If True, paste the message instead of typing it character by character.
                       Useful for long messages where typing is too slow.
         :param fake_typing: When paste=True, type dummy text first to avoid bot detection,
@@ -268,7 +270,7 @@ class Scraper(ABC):
         """
         self.send_message(
             message,
-            images=images,
+            attachments=attachments,
             paste=paste,
             fake_typing=fake_typing,
             typing_delay=typing_delay,
@@ -427,7 +429,7 @@ class Scraper(ABC):
         marker.touch()
 
     @classmethod
-    def simple_query(cls, prompt, images=None, timeout=None):
+    def simple_query(cls, prompt, attachments=None, timeout=None):
         """
         Open the browser, send a prompt, and return the response.
 
@@ -436,7 +438,7 @@ class Scraper(ABC):
         returns the full AssistantMessage.
 
         :param prompt: The prompt text to send.
-        :param images: Optional list of image file paths to attach.
+        :param attachments: Optional list of file paths to attach.
         :param timeout: Maximum seconds to wait for the response. Defaults to 5 minutes.
         :return: AssistantMessage with text and image fields.
         """
@@ -444,7 +446,7 @@ class Scraper(ABC):
         response = (
             scraper.open_url()
             .short_wait()
-            .query(prompt, images=images, timeout=timeout)
+            .query(prompt, attachments=attachments, timeout=timeout)
         )
         scraper.close()
         return response
