@@ -21,7 +21,7 @@ class ChatGPT(Scraper):
     Works without login for all current features including file upload.
     """
 
-    SUPPORTED_ATTACHMENTS = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf", ".csv", ".txt", ".json"}
+    SUPPORTED_ATTACHMENTS = { ".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf", ".csv", ".txt", ".json" }  # fmt: skip
 
     def open_url(self, url="https://chatgpt.com", timeout=30):
         if "chatgpt.com" not in url:

@@ -377,7 +377,11 @@ class Scraper(ABC):
         poll_interval = 1
 
         while elapsed < wait_time:
-            files = [f for f in self._selenium_download_dir.iterdir() if f.suffix != ".crdownload"]
+            files = [
+                f
+                for f in self._selenium_download_dir.iterdir()
+                if f.suffix != ".crdownload"
+            ]
             if files:
                 file = files[0]
                 dest = self.download_dir / file.name

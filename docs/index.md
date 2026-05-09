@@ -6,7 +6,7 @@ hide:
 <div class="hermex-hero">
   <img src="assets/logo.svg" alt="Hermex" />
   <p>
-    <i>Drive ChatGPT and Gemini from Python —no API keys, no billing, just the free web UI.</i>
+    <i>Drive ChatGPT and Gemini from Python — no API keys, no billing, just the free web UI.</i>
   </p>
   <div class="hermex-hero__buttons">
     <a href="installation/" class="md-button md-button--primary">Get started</a>
