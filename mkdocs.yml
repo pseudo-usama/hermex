@@ -1,5 +1,7 @@
 site_name: Hermex
 site_description: Drive ChatGPT and Gemini from Python — no API keys, no billing, just the free web UI.
+repo_url: https://github.com/pseudo-usama/hermex
+repo_name: pseudo-usama/hermex
 
 theme:
   name: material
@@ -18,10 +20,15 @@ theme:
   features:
     - navigation.sections
     - navigation.top
+    - navigation.footer
+    - navigation.instant
+    - toc.follow
     - search.highlight
+    - search.suggest
     - content.code.copy
 
 markdown_extensions:
+  - attr_list
   - pymdownx.highlight:
       anchor_linenums: true
   - pymdownx.superfences
@@ -40,6 +47,9 @@ plugins:
           options:
             show_source: false
             show_bases: true
+            show_root_heading: true
+            show_symbol_type_toc: true
+            show_symbol_type_heading: true
             members_order: source
             docstring_style: sphinx
 
@@ -51,5 +61,8 @@ nav:
     - Gemini: guides/gemini.md
     - ChatGPT: guides/chatgpt.md
   - API Reference:
-    - Scraper: api/scraper.md
+    - Shared Interface: api/shared-interface.md
+    - Gemini: api/gemini.md
+    - ChatGPT: api/chatgpt.md
     - Models: api/models.md
+    - Exceptions: api/exceptions.md
