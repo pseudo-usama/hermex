@@ -1,2 +1,5 @@
 class LoginRequiredError(Exception):
-    pass
+    """Raised when a login-gated feature is used without an active session.
+
+    Run ``Gemini.setup()`` to log in and save a persistent session.
+    """

@@ -1,5 +1,24 @@
 # Changelog
 
+## [0.2.0] - 2026-05-09
+
+### Added
+- `SUPPORTED_ATTACHMENTS` class constant on `Gemini` and `ChatGPT` — exposes the set of allowed file extensions per platform
+
+### Changed
+- `images` parameter renamed to `attachments` in `send_message()`, `query()`, and `simple_query()` across both scrapers
+- Supported upload types expanded from images only to include `.pdf`, `.csv`, `.txt`, `.json`, `.gif`, `.webp`
+
+### Fixed
+- `ChatGPT._detect_login()` now uses `WebDriverWait` with `TimeoutException` instead of a bare `find_element` with `except Exception`, consistent with Gemini's approach
+- `_detect_chrome_version()` now raises a clear `RuntimeError` when Chrome is not found, the subprocess fails, or the version string cannot be parsed — previously crashed with a cryptic `TypeError` or `AttributeError`
+- `close()` now calls `self._temp_dir.cleanup()` to release the temporary download directory
+- `setup()` browser-close detection now catches `WebDriverException` instead of bare `Exception`, and wraps the loop in `try/finally` to guarantee `close()` is always called
+- `_get_downloaded_file()` now filters out `.crdownload` partial files to avoid returning incomplete downloads
+- `simple_query()` now wraps the query in `try/finally` so the browser is always closed even if an exception is raised
+- File existence is now checked before upload in both scrapers — raises `FileNotFoundError` with a clear message instead of a cryptic driver error
+- `TemporaryDirectory` creation moved from `__init__` to `_initialize_driver()` so its lifecycle matches the driver — reusing an instance after `close()` no longer points Chrome at a deleted download directory, and calling `close()` twice is now a safe no-op
+
 ## [0.1.0] - 2026-05-03
 
 ### Added

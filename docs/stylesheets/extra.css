@@ -9,7 +9,48 @@
   display: none;
 }
 
+/* Push search and repo link to the right */
+.md-search {
+  margin-left: auto;
+}
+
 /* Make logo white on the teal header */
 .md-header__button.md-logo img {
   filter: brightness(0) invert(1);
+}
+
+/* Hide the auto-generated page title on the home page only */
+.md-typeset:has(.hermex-hero) h1 {
+  display: none;
+}
+
+/* Max width for home page content */
+.md-typeset:has(.hermex-hero) {
+  max-width: 750px;
+  margin: 0 auto;
+}
+
+/* Hero section on home page */
+.hermex-hero {
+  text-align: center;
+  padding: 1rem 0 1rem;
+}
+
+.hermex-hero img {
+  max-width: 400px;
+  margin-bottom: 0.3rem;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hermex-hero p {
+  color: var(--md-default-fg-color--light);
+  line-height: 1.7;
+}
+
+.hermex-hero__buttons {
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
 }

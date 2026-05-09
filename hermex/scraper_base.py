@@ -9,7 +9,7 @@ from shutil import move as move_file
 from tempfile import TemporaryDirectory
 
 import undetected_chromedriver as uc
-from selenium.common.exceptions import TimeoutException
+from selenium.common.exceptions import TimeoutException, WebDriverException
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.remote.webelement import WebElement
 
@@ -21,8 +21,18 @@ from hermex.utils import get_user_agent
 
 def _detect_chrome_version() -> int:
     chrome = uc.find_chrome_executable()
-    out = subprocess.check_output([chrome, "--version"], text=True)
-    version = int(re.search(r"(\d+)\.", out).group(1))
+    if not chrome:
+        raise RuntimeError(
+            "Chrome executable not found. Please install Google Chrome and ensure it is in your PATH."
+        )
+    try:
+        out = subprocess.check_output([chrome, "--version"], text=True)
+    except (subprocess.SubprocessError, OSError) as e:
+        raise RuntimeError(f"Failed to detect Chrome version: {e}") from e
+    match = re.search(r"(\d+)\.", out)
+    if not match:
+        raise RuntimeError(f"Could not parse Chrome version from: {out!r}")
+    version = int(match.group(1))
     if version < MIN_CHROME_VERSION:
         raise RuntimeError(
             f"Chrome {version} is not supported. Hermex requires Chrome {MIN_CHROME_VERSION} or higher."
@@ -77,8 +87,8 @@ class Scraper(ABC):
         self.browser_profile_dir = self._data_dir / "chrome_profile"
         self.chrome_version = chrome_version or _detect_chrome_version()
         self.disable_web_security = disable_web_security
-        self._temp_dir = TemporaryDirectory()
-        self._selenium_download_dir = Path(self._temp_dir.name)
+        self._temp_dir = None
+        self._selenium_download_dir = None
         self.download_dir = Path(download_dir)
         self.headless = headless
         self.driver = None
@@ -98,6 +108,8 @@ class Scraper(ABC):
 
     def _initialize_driver(self):
         """Initialize and configure the Chrome driver"""
+        self._temp_dir = TemporaryDirectory()
+        self._selenium_download_dir = Path(self._temp_dir.name)
         options = uc.ChromeOptions()
         options.add_argument("--start-maximized")
         options.add_argument("--disable-notifications")
@@ -163,17 +175,18 @@ class Scraper(ABC):
         self,
         message: str,
         submit: bool = True,
-        images: list[str | Path] = None,
+        attachments: list[str | Path] = None,
         paste: bool = False,
         fake_typing: bool = True,
         typing_delay: float = None,
     ) -> "Scraper":
         """
-        Input a message into the chat, optionally attaching images.
+        Input a message into the chat, optionally attaching files.
 
         :param message: Text to send.
         :param submit: Whether to press Enter after composing the message.
-        :param images: List of image file paths to attach before the message.
+        :param attachments: List of file paths to attach before the message. See
+                            ``SUPPORTED_ATTACHMENTS`` on the class for allowed types.
         :param paste: If True, paste the message instead of typing it character by
                       character. Useful for long messages where typing is too slow.
         :param fake_typing: When paste=True, type dummy text first to avoid bot
@@ -244,7 +257,7 @@ class Scraper(ABC):
         self,
         message: str,
         timeout: float = None,
-        images: list[str | Path] = None,
+        attachments: list[str | Path] = None,
         paste: bool = False,
         fake_typing: bool = True,
         typing_delay: float = None,
@@ -256,7 +269,8 @@ class Scraper(ABC):
 
         :param message: Text to send.
         :param timeout: Maximum seconds to wait for the response before raising TimeoutException. Defaults to 5 minutes.
-        :param images: List of image file paths to attach (platform-dependent).
+        :param attachments: List of file paths to attach. See
+                            ``SUPPORTED_ATTACHMENTS`` on the class for allowed types.
         :param paste: If True, paste the message instead of typing it character by character.
                       Useful for long messages where typing is too slow.
         :param fake_typing: When paste=True, type dummy text first to avoid bot detection,
@@ -268,7 +282,7 @@ class Scraper(ABC):
         """
         self.send_message(
             message,
-            images=images,
+            attachments=attachments,
             paste=paste,
             fake_typing=fake_typing,
             typing_delay=typing_delay,
@@ -288,7 +302,7 @@ class Scraper(ABC):
         for char in message:
             if char == "\n":  # Handle Newline: Shift+Enter
                 input_box.send_keys(Keys.SHIFT, Keys.ENTER)
-            elif ord(char) > 0xFFFF:  # Handle Emojies
+            elif ord(char) > 0xFFFF:  # Handle Emojis
                 self.driver.execute_script(
                     "document.execCommand('insertText', false, arguments[0]);", char
                 )
@@ -365,7 +379,11 @@ class Scraper(ABC):
         poll_interval = 1
 
         while elapsed < wait_time:
-            files = list(self._selenium_download_dir.iterdir())
+            files = [
+                f
+                for f in self._selenium_download_dir.iterdir()
+                if f.suffix != ".crdownload"
+            ]
             if files:
                 file = files[0]
                 dest = self.download_dir / file.name
@@ -382,6 +400,10 @@ class Scraper(ABC):
         if self.driver:
             self.driver.quit()
             self.driver = None
+        if self._temp_dir:
+            self._temp_dir.cleanup()
+            self._temp_dir = None
+            self._selenium_download_dir = None
 
     @classmethod
     def setup(cls, data_dir=None):
@@ -393,7 +415,7 @@ class Scraper(ABC):
         bot detection risk in subsequent automated runs. Everyone must run this
         at least once after installation.
 
-        If you need login-gated features (e.g. image upload), log in
+        If you need login-gated features (e.g. file upload), log in
         during this session. Hermex will reuse the saved session in all future
         runs — repeat setup only if your session expires.
 
@@ -414,20 +436,24 @@ class Scraper(ABC):
             warnings.simplefilter("ignore", UserWarning)
             scraper = cls(data_dir=data_dir)
         scraper.open_url()
-        while True:
-            try:
-                scraper.driver.window_handles
-                time.sleep(2)
-            except Exception:
-                break
-        scraper.close()
+        try:
+            while True:
+                try:
+                    scraper.driver.window_handles
+                    time.sleep(2)
+                except WebDriverException:
+                    # WebDriverException is the expected signal that the user closed
+                    # the browser window
+                    break
+        finally:
+            scraper.close()
 
         marker = Path(data_dir) / f".setup_{cls.__name__.lower()}"
         marker.parent.mkdir(parents=True, exist_ok=True)
         marker.touch()
 
     @classmethod
-    def simple_query(cls, prompt, images=None, timeout=None):
+    def simple_query(cls, prompt, attachments=None, timeout=None):
         """
         Open the browser, send a prompt, and return the response.
 
@@ -436,15 +462,17 @@ class Scraper(ABC):
         returns the full AssistantMessage.
 
         :param prompt: The prompt text to send.
-        :param images: Optional list of image file paths to attach.
+        :param attachments: Optional list of file paths to attach.
         :param timeout: Maximum seconds to wait for the response. Defaults to 5 minutes.
         :return: AssistantMessage with text and image fields.
         """
         scraper = cls()
-        response = (
-            scraper.open_url()
-            .short_wait()
-            .query(prompt, images=images, timeout=timeout)
-        )
-        scraper.close()
+        try:
+            response = (
+                scraper.open_url()
+                .short_wait()
+                .query(prompt, attachments=attachments, timeout=timeout)
+            )
+        finally:
+            scraper.close()
         return response

@@ -19,10 +19,10 @@ Gemini supports two modes:
 | Feature | Guest mode | Logged in |
 |---|---|---|
 | Text queries | ✓ | ✓ |
-| Image upload | ✗ | ✓ |
+| File upload | ✗ | ✓ |
 | Generated image download | ✓ | ✓ |
 
-If you try to upload an image without being logged in, Hermex raises a `LoginRequiredError`.
+If you try to upload files without being logged in, Hermex raises a `LoginRequiredError`.
 
 ## Basic text query
 
@@ -38,24 +38,24 @@ print(response.text)
 gemini.close()
 ```
 
-## Uploading images
+## Attaching files
 
-Image upload requires a logged-in session. Supported formats: `.jpg`, `.jpeg`, `.png`.
+File upload requires a logged-in session. Supported formats: `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.pdf`, `.csv`, `.txt`, `.json`. You can also check `Gemini.SUPPORTED_ATTACHMENTS` at runtime.
 
 ```python
 response = gemini.query(
     "What's wrong with this code?",
-    images=["screenshot.png"],
+    attachments=["screenshot.png"],
 )
 print(response.text)
 ```
 
-You can attach multiple images:
+You can attach multiple files:
 
 ```python
 response = gemini.query(
     "Compare these two diagrams.",
-    images=["diagram1.png", "diagram2.png"],
+    attachments=["diagram1.png", "diagram2.png"],
 )
 ```
 

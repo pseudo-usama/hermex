@@ -9,7 +9,6 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from hermex.config import SUPPORTED_IMAGE_EXTENSIONS
 from hermex.models import AssistantMessage, State
 from hermex.scraper_base import Scraper
 
@@ -18,9 +17,11 @@ class ChatGPT(Scraper):
     """
     Scraper for ChatGPT (chatgpt.com).
 
-    Supports text queries, image uploads, and downloading generated images.
-    Works without login for all current features including image upload.
+    Supports text queries, file uploads, and downloading generated images.
+    Works without login for all current features including file upload.
     """
+
+    SUPPORTED_ATTACHMENTS = { ".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf", ".csv", ".txt", ".json" }  # fmt: skip
 
     def open_url(self, url="https://chatgpt.com", timeout=30):
         if "chatgpt.com" not in url:
@@ -37,24 +38,26 @@ class ChatGPT(Scraper):
 
     def _detect_login(self):
         try:
-            self.driver.find_element(
-                By.CSS_SELECTOR, 'button[data-testid="login-button"]'
+            WebDriverWait(self.driver, 3).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, 'button[data-testid="login-button"]')
+                )
             )
             self.is_logged_in = False
-        except Exception:
+        except TimeoutException:
             self.is_logged_in = True
 
     def send_message(
         self,
         message,
         submit=True,
-        images: list[str | Path] = None,
+        attachments: list[str | Path] = None,
         paste=False,
         fake_typing=True,
         typing_delay: float = None,
     ):
-        if images:
-            self._upload_imgs(images)
+        if attachments:
+            self._upload_files(attachments)
 
         wait = WebDriverWait(self.driver, 20)
         input_box = wait.until(
@@ -70,7 +73,7 @@ class ChatGPT(Scraper):
         else:
             self._type_into(message, input_box, typing_delay=typing_delay)
 
-        if images:
+        if attachments:
             self._wait_until_state(State.TYPING)
 
         if submit:
@@ -78,15 +81,17 @@ class ChatGPT(Scraper):
 
         return self
 
-    def _upload_imgs(self, image_paths: list[str | Path]):
+    def _upload_files(self, file_paths: list[str | Path]):
         resolved = []
-        for image_path in image_paths:
-            image_path = Path(image_path).resolve()
-            if image_path.suffix.lower() not in SUPPORTED_IMAGE_EXTENSIONS:
+        for file_path in file_paths:
+            file_path = Path(file_path).resolve()
+            if not file_path.exists():
+                raise FileNotFoundError(f"File not found: {file_path}")
+            if file_path.suffix.lower() not in self.SUPPORTED_ATTACHMENTS:
                 raise ValueError(
-                    f"Unsupported file type '{image_path.suffix}'. Must be one of: {SUPPORTED_IMAGE_EXTENSIONS}"
+                    f"Unsupported file type '{file_path.suffix}'. Must be one of: {self.SUPPORTED_ATTACHMENTS}"
                 )
-            resolved.append(image_path)
+            resolved.append(file_path)
 
         file_input = self.driver.find_element(By.CSS_SELECTOR, "#upload-photos")
         self.driver.execute_script("arguments[0].style.display = 'block';", file_input)

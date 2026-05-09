@@ -11,12 +11,12 @@ Gemini.setup()   # for Gemini
 ChatGPT.setup()  # for ChatGPT
 ```
 
-A browser window will open. Browse around for a moment, then close the window. If you need features that require login (e.g. image upload on Gemini), log in during this session — Hermex will reuse the saved session in all future runs.
+A browser window will open. Browse around for a moment, then close the window. If you need features that require login (e.g. file upload on Gemini), log in during this session — Hermex will reuse the saved session in all future runs.
 
 You only need to do this once. Repeat it if your session expires.
 
 !!! note
-    ChatGPT works without login for all features including image upload. For Gemini, guest mode supports basic text queries — image upload requires a logged-in session.
+    ChatGPT works without login for all features including file upload. For Gemini, guest mode supports basic text queries — file upload requires a logged-in session.
 
 ## 2. Send your first query
 
@@ -48,7 +48,7 @@ print(response.text)
 gemini.close()
 ```
 
-## 4. Upload an image
+## 4. Attach a file
 
 ```python
 from hermex import ChatGPT
@@ -56,7 +56,7 @@ from hermex import ChatGPT
 chatgpt = ChatGPT()
 chatgpt.open_url()
 
-response = chatgpt.query("What's in this image?", images=["photo.jpg"])
+response = chatgpt.query("What's in this image?", attachments=["photo.jpg"])
 print(response.text)
 
 chatgpt.close()
@@ -75,4 +75,4 @@ print(response.image)  # Path to the downloaded file
 
 - [Gemini guide](guides/gemini.md) — Gemini-specific features including watermark removal
 - [ChatGPT guide](guides/chatgpt.md) — ChatGPT-specific tips and features
-- [API reference](api/scraper.md) — full method reference
+- [API reference](api/shared-interface.md) — full method reference

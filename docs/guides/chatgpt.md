@@ -26,24 +26,24 @@ print(response.text)
 chatgpt.close()
 ```
 
-## Uploading images
+## Attaching files
 
-ChatGPT supports image upload without requiring a logged-in session. Supported formats: `.jpg`, `.jpeg`, `.png`.
+ChatGPT supports file upload without requiring a logged-in session. Supported formats: `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.pdf`, `.csv`, `.txt`, `.json`. You can also check `ChatGPT.SUPPORTED_ATTACHMENTS` at runtime.
 
 ```python
 response = chatgpt.query(
     "Extract all the text from this image.",
-    images=["receipt.jpg"],
+    attachments=["receipt.jpg"],
 )
 print(response.text)
 ```
 
-Multiple images:
+Multiple files:
 
 ```python
 response = chatgpt.query(
     "What are the differences between these two screenshots?",
-    images=["before.png", "after.png"],
+    attachments=["before.png", "after.png"],
 )
 ```
 
@@ -107,7 +107,7 @@ from hermex import ChatGPT
 
 response = ChatGPT.simple_query(
     "What does this error mean?",
-    images=["traceback.png"],
+    attachments=["traceback.png"],
 )
 print(response.text)
 ```
