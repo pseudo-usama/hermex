@@ -75,4 +75,4 @@ print(response.image)  # Path to the downloaded file
 
 - [Gemini guide](guides/gemini.md) — Gemini-specific features including watermark removal
 - [ChatGPT guide](guides/chatgpt.md) — ChatGPT-specific tips and features
-- [API reference](api/scraper.md) — full method reference
+- [API reference](api/shared-interface.md) — full method reference
