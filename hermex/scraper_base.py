@@ -87,8 +87,8 @@ class Scraper(ABC):
         self.browser_profile_dir = self._data_dir / "chrome_profile"
         self.chrome_version = chrome_version or _detect_chrome_version()
         self.disable_web_security = disable_web_security
-        self._temp_dir = TemporaryDirectory()
-        self._selenium_download_dir = Path(self._temp_dir.name)
+        self._temp_dir = None
+        self._selenium_download_dir = None
         self.download_dir = Path(download_dir)
         self.headless = headless
         self.driver = None
@@ -108,6 +108,8 @@ class Scraper(ABC):
 
     def _initialize_driver(self):
         """Initialize and configure the Chrome driver"""
+        self._temp_dir = TemporaryDirectory()
+        self._selenium_download_dir = Path(self._temp_dir.name)
         options = uc.ChromeOptions()
         options.add_argument("--start-maximized")
         options.add_argument("--disable-notifications")
@@ -398,7 +400,10 @@ class Scraper(ABC):
         if self.driver:
             self.driver.quit()
             self.driver = None
-        self._temp_dir.cleanup()
+        if self._temp_dir:
+            self._temp_dir.cleanup()
+            self._temp_dir = None
+            self._selenium_download_dir = None
 
     @classmethod
     def setup(cls, data_dir=None):

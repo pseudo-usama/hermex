@@ -17,6 +17,7 @@
 - `_get_downloaded_file()` now filters out `.crdownload` partial files to avoid returning incomplete downloads
 - `simple_query()` now wraps the query in `try/finally` so the browser is always closed even if an exception is raised
 - File existence is now checked before upload in both scrapers — raises `FileNotFoundError` with a clear message instead of a cryptic driver error
+- `TemporaryDirectory` creation moved from `__init__` to `_initialize_driver()` so its lifecycle matches the driver — reusing an instance after `close()` no longer points Chrome at a deleted download directory, and calling `close()` twice is now a safe no-op
 
 ## [0.1.0] - 2026-05-03
 
