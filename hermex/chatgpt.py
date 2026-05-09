@@ -38,11 +38,13 @@ class ChatGPT(Scraper):
 
     def _detect_login(self):
         try:
-            self.driver.find_element(
-                By.CSS_SELECTOR, 'button[data-testid="login-button"]'
+            WebDriverWait(self.driver, 3).until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, 'button[data-testid="login-button"]')
+                )
             )
             self.is_logged_in = False
-        except Exception:
+        except TimeoutException:
             self.is_logged_in = True
 
     def send_message(
