@@ -167,7 +167,9 @@ class ChatGPT(Scraper):
         if self.driver.find_elements(By.CSS_SELECTOR, '[data-testid="stop-button"]'):
             return State.GENERATING
 
-        if self.driver.find_elements(By.CSS_SELECTOR, '[data-testid="image-gen-loading-state"]'):
+        if self.driver.find_elements(
+            By.CSS_SELECTOR, '[data-testid="image-gen-loading-state"]'
+        ):
             return State.GENERATING
 
         try:
