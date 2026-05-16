@@ -6,7 +6,7 @@
 
 ## Login
 
-ChatGPT works without login for all features including file upload. You can still run `ChatGPT.setup()` to build a persistent browser profile (recommended for bot detection), but logging in is optional.
+ChatGPT works without login for text queries and file upload. Image generation requires a logged-in session — run `ChatGPT.setup()` and log in to enable it. Setup is also recommended regardless for bot detection, as it builds a persistent browser profile.
 
 ---
 

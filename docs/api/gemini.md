@@ -8,11 +8,11 @@
 
 Gemini works in two modes depending on whether you are logged in:
 
-| Feature | Guest mode | Logged in |
+| Feature | Without login | Logged in |
 |---|---|---|
 | Text queries | ✓ | ✓ |
 | File upload | ✗ | ✓ |
-| Generated image download | ✓ | ✓ |
+| Image generation | ✓ | ✓ |
 | Watermark removal | ✓ | ✓ |
 
 Attempting file upload without a logged-in session raises [`LoginRequiredError`](exceptions.md). Run `Gemini.setup()` and log in to enable it.

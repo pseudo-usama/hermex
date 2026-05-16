@@ -16,11 +16,11 @@ Browse around briefly, log in to your Google account if you want image upload su
 
 Gemini supports two modes:
 
-| Feature | Guest mode | Logged in |
+| Feature | Without login | Logged in |
 |---|---|---|
 | Text queries | ✓ | ✓ |
 | File upload | ✗ | ✓ |
-| Generated image download | ✓ | ✓ |
+| Image generation | ✓ | ✓ |
 
 If you try to upload files without being logged in, Hermex raises a `LoginRequiredError`.
 

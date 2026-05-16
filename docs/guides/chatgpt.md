@@ -10,7 +10,17 @@ from hermex import ChatGPT
 ChatGPT.setup()
 ```
 
-Browse around briefly, then close the window. Login is optional — ChatGPT works without it for all features including image upload.
+Browse around briefly, then close the window. Login is optional for text queries and file upload, but image generation requires a logged-in session — log in during setup if you need it.
+
+## Without login vs logged in
+
+| Feature | Without login | Logged in |
+|---|---|---|
+| Text queries | ✓ | ✓ |
+| File upload | ✓ | ✓ |
+| Image generation | ✗ | ✓ |
+
+If you try to generate an image without being logged in, ChatGPT will not produce one — no error is raised, the response will simply contain text instead.
 
 ## Basic text query
 

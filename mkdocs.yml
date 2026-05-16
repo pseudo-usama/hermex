@@ -6,6 +6,9 @@ repo_name: pseudo-usama/hermex
 theme:
   name: material
   logo: assets/logo.svg
+  favicon: assets/favicon.svg
+  icon:
+    repo: fontawesome/brands/github-alt
   palette:
     - scheme: default
       primary: custom
@@ -23,11 +26,14 @@ theme:
     - navigation.footer
     - navigation.instant
     - toc.follow
+    - toc.permalink
     - search.highlight
     - search.suggest
     - content.code.copy
 
 markdown_extensions:
+  - toc:
+      permalink: true
   - attr_list
   - pymdownx.highlight:
       anchor_linenums: true
@@ -35,6 +41,17 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - admonition
   - pymdownx.details
+
+copyright: Copyright &copy; 2026 Usama
+
+extra:
+  social:
+    - icon: material/language-python
+      link: https://pypi.org/project/hermex
+      name: Hermex on PyPI
+    - icon: fontawesome/brands/github-alt
+      link: https://github.com/pseudo-usama/hermex
+      name: Hermex on GitHub
 
 extra_css:
   - stylesheets/extra.css

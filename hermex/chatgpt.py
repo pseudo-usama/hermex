@@ -18,7 +18,8 @@ class ChatGPT(Scraper):
     Scraper for ChatGPT (chatgpt.com).
 
     Supports text queries, file uploads, and downloading generated images.
-    Works without login for all current features including file upload.
+    Text queries and file upload work without login; image generation requires
+    a logged-in session established via `ChatGPT.setup()`.
     """
 
     SUPPORTED_ATTACHMENTS = { ".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf", ".csv", ".txt", ".json" }  # fmt: skip
