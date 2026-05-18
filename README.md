@@ -55,7 +55,7 @@ Gemini.setup()  # opens a browser — log in, browse briefly, then close the win
 
 After setup, all future runs reuse the saved session automatically. Repeat this if your session expires.
 
-Guest mode (no login) works for basic text queries on Gemini but file upload requires a logged-in session. ChatGPT works without login for all features including file upload.
+Guest mode (no login) works for basic text queries on Gemini but file upload requires a logged-in session. ChatGPT works without login for text queries and file upload, but image generation requires a logged-in session.
 
 ## Usage
 

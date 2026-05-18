@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1] - 2026-05-18
+
+### Fixed
+- Corrected documentation for ChatGPT login requirements — file upload works without login; only image generation requires a logged-in session
+- `ChatGPT.get_state()` now correctly returns `GENERATING` during image generation — after a recent ChatGPT UI update, the stop button disappears while the image loading skeleton is still visible, causing the state to appear idle prematurely; fixed by additionally checking for `[data-testid="image-gen-loading-state"]`
+- `ChatGPT.get_last_response()` no longer raises a spurious "neither text nor image" error on image-only responses — the `<img>` tag is now awaited for up to 5 seconds to account for the brief DOM delay after the loading skeleton clears
+
 ## [0.2.0] - 2026-05-09
 
 ### Added

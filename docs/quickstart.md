@@ -16,7 +16,7 @@ A browser window will open. Browse around for a moment, then close the window. I
 You only need to do this once. Repeat it if your session expires.
 
 !!! note
-    ChatGPT works without login for all features including file upload. For Gemini, guest mode supports basic text queries — file upload requires a logged-in session.
+    ChatGPT works without login for file upload and text queries, but image generation requires a logged-in session. For Gemini, guest mode supports basic text queries — file upload requires a logged-in session.
 
 ## 2. Send your first query
 
