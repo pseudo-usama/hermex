@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.2.1] - 2026-05-18
 
 ### Fixed
 - Corrected documentation for ChatGPT login requirements — file upload works without login; only image generation requires a logged-in session
