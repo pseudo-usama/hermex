@@ -1,3 +1,7 @@
+---
+description: Full API reference for the shared Hermex interface — constructor, setup, query, send_message, wait_until_idle, and more.
+---
+
 # Shared Interface
 
 `Gemini` and `ChatGPT` share the same interface — everything documented here applies to both. For platform-specific behavior, see the [Gemini](gemini.md) and [ChatGPT](chatgpt.md) pages.

@@ -1,6 +1,8 @@
 ---
 hide:
   - toc
+title: Drive ChatGPT & Gemini from Python
+description: Drive ChatGPT and Gemini from Python using the free web UI — no API keys, no billing, no rate limits.
 ---
 
 <div class="hermex-hero">

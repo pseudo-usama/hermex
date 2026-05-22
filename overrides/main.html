@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block extrahead %}
+  {{ super() }}
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="{{ config.site_name }}" />
+  <meta property="og:title" content="{{ page.title }} – {{ config.site_name }}" />
+  <meta property="og:url" content="{{ page.canonical_url }}" />
+  {% if page.meta and page.meta.description %}
+  <meta property="og:description" content="{{ page.meta.description }}" />
+  <meta name="twitter:description" content="{{ page.meta.description }}" />
+  {% elif config.site_description %}
+  <meta property="og:description" content="{{ config.site_description }}" />
+  <meta name="twitter:description" content="{{ config.site_description }}" />
+  {% endif %}
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="{{ page.title }} – {{ config.site_name }}" />
+{% endblock %}

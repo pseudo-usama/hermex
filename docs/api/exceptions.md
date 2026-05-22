@@ -1,3 +1,7 @@
+---
+description: API reference for Hermex exceptions — LoginRequiredError and how to handle missing login sessions.
+---
+
 # Exceptions
 
 ---
