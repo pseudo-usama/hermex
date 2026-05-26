@@ -24,7 +24,7 @@
 
 ChatGPT and Gemini are incredibly capable — but their official APIs are expensive, and for many tasks you simply don't need them. If you want to run OCR on an image, generate artwork, extract text from a screenshot, or just ask a quick question in a script, paying per-token for API access is overkill when the free web UI can do the same thing.
 
-Hermex lets you drive ChatGPT and Gemini from Python just like a human would: it opens a real Chrome browser, types your message, uploads your files, waits for the response, and hands it back to you as a Python object. No API keys, no billing, no rate-limit tiers.
+Hermex lets you automate ChatGPT and Gemini with Python — no API keys, no billing, no rate-limit tiers. It opens a real Chrome browser, types your message, uploads your files, waits for the response, and hands it back to you as a Python object, just like a human would.
 
 ```python
 from hermex import ChatGPT
@@ -165,3 +165,4 @@ response = gemini.query("Generate an image of a sunset.", remove_watermark=True)
 - Bot detection is mitigated through per-character typing delays, fake typing before paste, a persistent browser profile, and a spoofed user agent. Avoid running headless for sensitive sessions.
 - Browser profile and session data are stored in the platform data directory (`~/Library/Application Support/hermex` on macOS).
 - This library relies on browser automation and may break if the UI changes. Use responsibly and be aware of each platform's terms of service.
+- See [CHANGELOG.md](CHANGELOG.md) for the full release history.
