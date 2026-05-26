@@ -1,3 +1,7 @@
+---
+description: Get started with Hermex in minutes — run setup, send your first query, attach files, and retrieve generated images.
+---
+
 # Quickstart
 
 ## 1. Run setup

@@ -1,14 +1,16 @@
 site_name: Hermex
+site_url: https://hermex.usama.ai/
 site_description: Drive ChatGPT and Gemini from Python — no API keys, no billing, just the free web UI.
 repo_url: https://github.com/pseudo-usama/hermex
 repo_name: pseudo-usama/hermex
 
 theme:
   name: material
+  custom_dir: overrides
   logo: assets/logo.svg
   favicon: assets/favicon.svg
   icon:
-    repo: fontawesome/brands/github-alt
+    repo: fontawesome/brands/github
   palette:
     - scheme: default
       primary: custom
@@ -30,6 +32,7 @@ theme:
     - search.highlight
     - search.suggest
     - content.code.copy
+    - content.tooltips
 
 markdown_extensions:
   - toc:
@@ -49,15 +52,21 @@ extra:
     - icon: material/language-python
       link: https://pypi.org/project/hermex
       name: Hermex on PyPI
-    - icon: fontawesome/brands/github-alt
+    - icon: fontawesome/brands/github
       link: https://github.com/pseudo-usama/hermex
       name: Hermex on GitHub
+    - icon: material/auto-fix
+      link: https://watermark.usama.ai
+      name: Gemini Watermark Remover
 
 extra_css:
   - stylesheets/extra.css
 
 plugins:
   - search
+  - social:
+      cards_layout_dir: overrides/layouts
+      cards_layout: hermex
   - mkdocstrings:
       handlers:
         python:

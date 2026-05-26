@@ -1,3 +1,7 @@
+---
+description: Install Hermex via pip and set up your data directory on macOS, Linux, or Windows.
+---
+
 # Installation
 
 ## Requirements

@@ -1,3 +1,7 @@
+---
+description: Complete guide to using Hermex with ChatGPT — file uploads, image generation, multi-turn conversations, and one-shot scripts.
+---
+
 # ChatGPT Guide
 
 ## First-time setup

@@ -1,3 +1,7 @@
+---
+description: API reference for the Gemini scraper — supported attachments, watermark removal, guest mode, and Gemini-specific behavior.
+---
+
 # Gemini
 
 `Gemini` targets [gemini.google.com](https://gemini.google.com). All methods shared with `ChatGPT` are documented on the [Shared Interface](shared-interface.md) page — this page covers only what is specific to Gemini.

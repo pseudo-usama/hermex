@@ -1,3 +1,7 @@
+---
+description: Complete guide to using Hermex with Google Gemini — file uploads, image generation, watermark removal, and multi-turn conversations.
+---
+
 # Gemini Guide
 
 ## First-time setup

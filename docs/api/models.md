@@ -1,3 +1,7 @@
+---
+description: API reference for Hermex data models — AssistantMessage and State.
+---
+
 # Models
 
 ---

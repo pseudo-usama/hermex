@@ -1,3 +1,7 @@
+---
+description: API reference for the ChatGPT scraper — supported attachments, login requirements, image generation, and ChatGPT-specific behavior.
+---
+
 # ChatGPT
 
 `ChatGPT` targets [chatgpt.com](https://chatgpt.com). All methods shared with `Gemini` are documented on the [Shared Interface](shared-interface.md) page — this page covers only what is specific to ChatGPT.

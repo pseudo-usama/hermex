@@ -31,7 +31,7 @@ Documentation = "https://hermex.usama.ai"
 Repository = "https://github.com/pseudo-usama/hermex"
 
 [project.optional-dependencies]
-dev = ["ruff", "mkdocs", "mkdocs-material", "mkdocstrings[python]"]
+dev = ["ruff", "mkdocs", "mkdocs-material[imaging]", "mkdocstrings[python]"]
 
 [build-system]
 requires = ["setuptools>=61.0"]

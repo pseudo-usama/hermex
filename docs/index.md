@@ -1,6 +1,8 @@
 ---
 hide:
   - toc
+title: Drive ChatGPT & Gemini from Python
+description: Drive ChatGPT and Gemini from Python using the free web UI — no API keys, no billing, no rate limits.
 ---
 
 <div class="hermex-hero">
@@ -23,7 +25,10 @@ Hermex lets you drive ChatGPT and Gemini from Python just like a human would: it
 ```python
 from hermex import ChatGPT
 
-response = ChatGPT.simple_query("What does this receipt say?", attachments=["receipt.jpg"])
+response = ChatGPT.simple_query(
+    "What does this receipt say?",
+    attachments=["receipt.jpg"]
+)
 print(response.text)
 ```
 
