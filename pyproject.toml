@@ -29,6 +29,7 @@ dependencies = [
 Homepage = "https://hermex.usama.ai"
 Documentation = "https://hermex.usama.ai"
 Repository = "https://github.com/pseudo-usama/hermex"
+Changelog = "https://hermex.usama.ai/changelog/"
 
 [project.optional-dependencies]
 dev = ["ruff", "mkdocs", "mkdocs-material[imaging]", "mkdocstrings[python]"]

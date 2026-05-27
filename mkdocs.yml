@@ -42,6 +42,9 @@ markdown_extensions:
       anchor_linenums: true
   - pymdownx.superfences
   - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true
   - admonition
   - pymdownx.details
 
@@ -92,3 +95,4 @@ nav:
     - ChatGPT: api/chatgpt.md
     - Models: api/models.md
     - Exceptions: api/exceptions.md
+  - Changelog: changelog.md
