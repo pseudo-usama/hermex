@@ -130,7 +130,7 @@ Both `Gemini` and `ChatGPT` share the same interface — all methods below apply
 | `get_last_response(get_markdown, remove_watermark)` | Retrieve the most recent response |
 | `wait_until_idle(timeout)` | Block until the chatbot finishes generating |
 | `get_state()` | Return the current UI state (`State.IDLE`, `GENERATING`, `TYPING`, `UPLOADING`) |
-| `simple_query(prompt, attachments, timeout)` | Class method — open, query, close in one call |
+| `simple_query(message, attachments, timeout)` | Class method — open, query, close in one call |
 | `short_wait()` | Sleep ~7 seconds |
 | `long_wait()` | Sleep ~5 minutes |
 | `refresh_page()` | Reload the current page |
