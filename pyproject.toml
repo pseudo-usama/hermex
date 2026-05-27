@@ -1,6 +1,6 @@
 [project]
 name = "hermex"
-version = "0.3.0"
+version = "0.3.1"
 description = "Drive ChatGPT and Gemini from Python — no API keys, no billing, just the free web UI."
 authors = [{name = "Usama", email = "hello@usama.ai"}]
 readme = "README.md"

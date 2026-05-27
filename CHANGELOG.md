@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.3.1] - 2026-05-27
 
 ### Changed
 - `simple_query()` now accepts `paste`, `fake_typing`, `typing_delay`, `get_markdown`, and `remove_watermark`, forwarding them to `query()` — its signature now matches `query()` instead of silently omitting these options
