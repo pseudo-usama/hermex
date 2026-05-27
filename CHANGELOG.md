@@ -1,6 +1,7 @@
 # Changelog
 
-## [Unreleased]
+### Added
+- `hermex.__version__` attribute, derived from the installed package metadata
 
 ### Changed
 - `simple_query()` parameter `prompt` renamed to `message` for consistency with `send_message()` and `query()`, which already use `message`
