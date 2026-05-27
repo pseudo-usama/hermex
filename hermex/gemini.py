@@ -117,13 +117,22 @@ class Gemini(Scraper):
 
         self.driver.find_element(
             By.CSS_SELECTOR,
-            '[data-node-type="input-area"] button[aria-label="Open upload file menu"]',
+            '[data-node-type="input-area"] button[aria-label="Upload & tools"]',
         ).click()
 
         # Clicking "Upload files" creates the hidden input[name="Filedata"] and triggers .click() on it.
+        # Both the maximized and narrow/mobile upload menus wrap the trigger in the same
+        # <images-files-uploader data-test-id="uploader-images-files-button-advanced"> element, but the
+        # visible button inside differs by layout (a mat-list-item menu item vs. a mobile mdc-button).
+        # Each wrapper also holds a hidden decoy (.hidden-local-file-image-selector-button) we must not
+        # click — :not() excludes it, so this resolves to the visible trigger in either layout.
         wait.until(
             EC.element_to_be_clickable(
-                (By.CSS_SELECTOR, '[data-test-id="local-images-files-uploader-button"]')
+                (
+                    By.CSS_SELECTOR,
+                    'images-files-uploader[data-test-id="uploader-images-files-button-advanced"] '
+                    "button:not(.hidden-local-file-image-selector-button)",
+                )
             )
         ).click()
 
