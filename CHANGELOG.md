@@ -1,10 +1,16 @@
 # Changelog
 
-## [0.3.1] - 2026-05-27
+## [0.4.0] - 2026-05-27
+
+### Added
+- `simple_query()` now accepts `paste`, `fake_typing`, `typing_delay`, `get_markdown`, and `remove_watermark`, forwarding them to `query()`
 
 ### Changed
-- `simple_query()` now accepts `paste`, `fake_typing`, `typing_delay`, `get_markdown`, and `remove_watermark`, forwarding them to `query()` — its signature now matches `query()` instead of silently omitting these options
-- Parameter order and docstrings for shared arguments aligned across `send_message()`, `query()`, and `simple_query()` for consistency
+- `send_message()` argument order changed — `submit` moved to the end of the parameter list. Calls passing `submit` positionally must be updated; keyword calls are unaffected
+- `query()` and `simple_query()` argument order changed — `timeout` moved to the end of the parameter list (the two now share an identical parameter order). Calls passing `timeout` positionally must be updated; keyword calls are unaffected
+- Docstrings for shared arguments aligned across `send_message()`, `query()`, and `simple_query()` for consistency
+- `ChatGPT.send_message()` and `Gemini.send_message()` signatures aligned with the base `Scraper.send_message()` (added type hints)
+- Fluent `Scraper` methods (those returning `self`, e.g. `open_url()`, `send_message()`, `short_wait()`) are now annotated with `typing.Self`, so type checkers preserve the concrete subclass type through chained calls
 
 ## [0.3.0] - 2026-05-27
 
