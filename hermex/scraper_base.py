@@ -453,15 +453,15 @@ class Scraper(ABC):
         marker.touch()
 
     @classmethod
-    def simple_query(cls, prompt, attachments=None, timeout=None):
+    def simple_query(cls, message, attachments=None, timeout=None):
         """
-        Open the browser, send a prompt, and return the response.
+        Open the browser, send a message, and return the response.
 
         Convenience method for one-shot scripts that don't need a persistent
-        session. Opens the browser, sends the prompt, closes the browser, and
+        session. Opens the browser, sends the message, closes the browser, and
         returns the full AssistantMessage.
 
-        :param prompt: The prompt text to send.
+        :param message: Text to send.
         :param attachments: Optional list of file paths to attach.
         :param timeout: Maximum seconds to wait for the response. Defaults to 5 minutes.
         :return: AssistantMessage with text and image fields.
@@ -471,7 +471,7 @@ class Scraper(ABC):
             response = (
                 scraper.open_url()
                 .short_wait()
-                .query(prompt, attachments=attachments, timeout=timeout)
+                .query(message, attachments=attachments, timeout=timeout)
             )
         finally:
             scraper.close()

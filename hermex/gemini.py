@@ -1,7 +1,11 @@
 from pathlib import Path
 
 import pyperclip
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.common.exceptions import (
+    NoSuchElementException,
+    TimeoutException,
+    WebDriverException,
+)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
@@ -105,7 +109,8 @@ class Gemini(Scraper):
 
         # Gemini's JS calls input.click() internally when the upload menu item is clicked,
         # which would open an OS file dialog we can't control. Patch the prototype before
-        # any clicks so that call is silently suppressed. The patch is restored after upload.
+        # any clicks so that call is silently suppressed. The patch is restored in the
+        # finally block below so it is never left active if an intermediate step fails.
         self.driver.execute_script("""
             const orig = HTMLInputElement.prototype.click;
             HTMLInputElement.prototype.click = function() {
@@ -115,28 +120,48 @@ class Gemini(Scraper):
             window.__restoreFileClick = () => { HTMLInputElement.prototype.click = orig; };
         """)
 
-        self.driver.find_element(
-            By.CSS_SELECTOR,
-            '[data-node-type="input-area"] button[aria-label="Open upload file menu"]',
-        ).click()
+        try:
+            self.driver.find_element(
+                By.CSS_SELECTOR,
+                '[data-node-type="input-area"] button[aria-label="Upload & tools"]',
+            ).click()
 
-        # Clicking "Upload files" creates the hidden input[name="Filedata"] and triggers .click() on it.
-        wait.until(
-            EC.element_to_be_clickable(
-                (By.CSS_SELECTOR, '[data-test-id="local-images-files-uploader-button"]')
+            # Clicking "Upload files" creates the hidden input[name="Filedata"] and triggers .click() on it.
+            # Both the maximized and narrow/mobile upload menus wrap the trigger in the same
+            # <images-files-uploader data-test-id="uploader-images-files-button-advanced"> element, but the
+            # visible button inside differs by layout (a mat-list-item menu item vs. a mobile mdc-button).
+            # Each wrapper also holds a hidden decoy (.hidden-local-file-image-selector-button) we must not
+            # click — :not() excludes it, so this resolves to the visible trigger in either layout.
+            wait.until(
+                EC.element_to_be_clickable(
+                    (
+                        By.CSS_SELECTOR,
+                        'images-files-uploader[data-test-id="uploader-images-files-button-advanced"] '
+                        "button:not(.hidden-local-file-image-selector-button)",
+                    )
+                )
+            ).click()
+
+            # The input is display:none — unhide it so Selenium accepts send_keys.
+            # send_keys on a file input bypasses the OS dialog entirely (ChromeDriver handles it internally).
+            file_input = wait.until(
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, 'input[name="Filedata"]')
+                )
             )
-        ).click()
-
-        # The input is display:none — unhide it so Selenium accepts send_keys.
-        # send_keys on a file input bypasses the OS dialog entirely (ChromeDriver handles it internally).
-        file_input = wait.until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, 'input[name="Filedata"]'))
-        )
-        self.driver.execute_script("arguments[0].style.display = 'block';", file_input)
-        file_input.send_keys("\n".join(str(p) for p in resolved))
-        self.driver.execute_script(
-            "window.__restoreFileClick && window.__restoreFileClick();"
-        )
+            self.driver.execute_script(
+                "arguments[0].style.display = 'block';", file_input
+            )
+            file_input.send_keys("\n".join(str(p) for p in resolved))
+        finally:
+            # Best-effort restore. If the page/session is in a bad state the restore
+            # itself may fail — swallow that so it never masks the original upload error.
+            try:
+                self.driver.execute_script(
+                    "window.__restoreFileClick && window.__restoreFileClick();"
+                )
+            except WebDriverException:
+                pass
 
     def get_last_response(
         self, get_markdown=False, remove_watermark=False

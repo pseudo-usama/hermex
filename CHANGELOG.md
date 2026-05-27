@@ -1,5 +1,17 @@
 # Changelog
 
+## [Unreleased]
+
+### Added
+- `hermex.__version__` attribute, derived from the installed package metadata
+
+### Changed
+- `simple_query()` parameter `prompt` renamed to `message` for consistency with `send_message()` and `query()`, which already use `message`
+
+### Fixed
+- `Gemini` file upload updated for the latest UI: the upload-menu button's `aria-label` changed from `Open upload file menu` to `Upload & tools`, and the "Upload files" trigger is now located via the shared `images-files-uploader[data-test-id="uploader-images-files-button-advanced"]` wrapper so it resolves correctly in both the maximized and narrow/mobile menu layouts
+- `Gemini` file upload now restores the patched `HTMLInputElement.prototype.click` even when an intermediate step fails (best-effort restore in `try/finally`), preventing the override from leaking into the page without masking the original error
+
 ## [0.2.1] - 2026-05-18
 
 ### Fixed
