@@ -1,7 +1,11 @@
 from pathlib import Path
 
 import pyperclip
-from selenium.common.exceptions import NoSuchElementException, TimeoutException
+from selenium.common.exceptions import (
+    NoSuchElementException,
+    TimeoutException,
+    WebDriverException,
+)
 from selenium.webdriver.common.by import By
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
@@ -146,9 +150,14 @@ class Gemini(Scraper):
             self.driver.execute_script("arguments[0].style.display = 'block';", file_input)
             file_input.send_keys("\n".join(str(p) for p in resolved))
         finally:
-            self.driver.execute_script(
-                "window.__restoreFileClick && window.__restoreFileClick();"
-            )
+            # Best-effort restore. If the page/session is in a bad state the restore
+            # itself may fail — swallow that so it never masks the original upload error.
+            try:
+                self.driver.execute_script(
+                    "window.__restoreFileClick && window.__restoreFileClick();"
+                )
+            except WebDriverException:
+                pass
 
     def get_last_response(
         self, get_markdown=False, remove_watermark=False
