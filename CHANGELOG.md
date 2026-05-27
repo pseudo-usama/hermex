@@ -1,5 +1,7 @@
 # Changelog
 
+## [Unreleased]
+
 ### Added
 - `hermex.__version__` attribute, derived from the installed package metadata
 
