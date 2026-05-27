@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Changed
+- `simple_query()` now accepts `paste`, `fake_typing`, `typing_delay`, `get_markdown`, and `remove_watermark`, forwarding them to `query()` — its signature now matches `query()` instead of silently omitting these options
+- Parameter order and docstrings for shared arguments aligned across `send_message()`, `query()`, and `simple_query()` for consistency
+
 ## [0.3.0] - 2026-05-27
 
 ### Added
