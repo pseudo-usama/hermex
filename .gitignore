@@ -2,6 +2,6 @@
 __pycache__
 dist/
 *.egg-info/
-/site
-/.cache
+/docs/site
+/docs/.cache
 /.ruff_cache

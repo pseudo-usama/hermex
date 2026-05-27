@@ -4,6 +4,8 @@ site_description: Drive ChatGPT and Gemini from Python — no API keys, no billi
 repo_url: https://github.com/pseudo-usama/hermex
 repo_name: pseudo-usama/hermex
 
+docs_dir: content
+
 theme:
   name: material
   custom_dir: overrides
@@ -43,7 +45,7 @@ markdown_extensions:
   - pymdownx.superfences
   - pymdownx.inlinehilite
   - pymdownx.snippets:
-      base_path: ["."]
+      base_path: [".."]
       check_paths: true
   - admonition
   - pymdownx.details
@@ -73,6 +75,7 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
+          paths: [..]  # `import hermex` resolves
           options:
             show_source: false
             show_bases: true
