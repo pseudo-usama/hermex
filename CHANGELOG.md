@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.3.0] - 2026-05-27
 
 ### Added
 - `hermex.__version__` attribute, derived from the installed package metadata
