@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Self
 
 import pyperclip
 from selenium.common.exceptions import NoSuchElementException, TimeoutException
@@ -50,13 +51,13 @@ class ChatGPT(Scraper):
 
     def send_message(
         self,
-        message,
-        submit=True,
+        message: str,
         attachments: list[str | Path] = None,
-        paste=False,
-        fake_typing=True,
+        paste: bool = False,
+        fake_typing: bool = True,
         typing_delay: float = None,
-    ):
+        submit: bool = True,
+    ) -> Self:
         if attachments:
             self._upload_files(attachments)
 

@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Self
 
 import pyperclip
 from selenium.common.exceptions import (
@@ -56,12 +57,12 @@ class Gemini(Scraper):
     def send_message(
         self,
         message: str,
-        submit=True,
         attachments: list[str | Path] = None,
-        paste=False,
-        fake_typing=True,
+        paste: bool = False,
+        fake_typing: bool = True,
         typing_delay: float = None,
-    ):
+        submit: bool = True,
+    ) -> Self:
         wait = WebDriverWait(self.driver, 20)
         input_box = wait.until(
             EC.element_to_be_clickable((By.TAG_NAME, "rich-textarea"))

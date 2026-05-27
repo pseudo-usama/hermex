@@ -7,6 +7,7 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 from shutil import move as move_file
 from tempfile import TemporaryDirectory
+from typing import Self
 
 import undetected_chromedriver as uc
 from selenium.common.exceptions import TimeoutException, WebDriverException
@@ -106,7 +107,7 @@ class Scraper(ABC):
                 stacklevel=2,
             )
 
-    def _initialize_driver(self):
+    def _initialize_driver(self) -> Self:
         """Initialize and configure the Chrome driver"""
         self._temp_dir = TemporaryDirectory()
         self._selenium_download_dir = Path(self._temp_dir.name)
@@ -145,7 +146,7 @@ class Scraper(ABC):
         )
         return self
 
-    def open_url(self, url=None, timeout=30):
+    def open_url(self, url=None, timeout=30) -> Self:
         """
         Open a URL in the browser and wait for the page to be ready.
 
@@ -174,32 +175,30 @@ class Scraper(ABC):
     def send_message(
         self,
         message: str,
-        submit: bool = True,
         attachments: list[str | Path] = None,
         paste: bool = False,
         fake_typing: bool = True,
         typing_delay: float = None,
-    ) -> "Scraper":
+        submit: bool = True,
+    ) -> Self:
         """
         Input a message into the chat, optionally attaching files.
 
         :param message: Text to send.
-        :param submit: Whether to press Enter after composing the message.
-        :param attachments: List of file paths to attach before the message. See
+        :param attachments: List of file paths to attach. See
                             ``SUPPORTED_ATTACHMENTS`` on the class for allowed types.
-        :param paste: If True, paste the message instead of typing it character by
-                      character. Useful for long messages where typing is too slow.
-        :param fake_typing: When paste=True, type dummy text first to avoid bot
-                            detection, then replace it with the real message.
-        :param typing_delay: Seconds between each keystroke. Overrides the
-                             instance-level default set in the constructor for this call
-                             only.
+        :param paste: If True, paste the message instead of typing it character by character.
+                      Useful for long messages where typing is too slow.
+        :param fake_typing: When paste=True, type dummy text first to avoid bot detection,
+                            then replace it with the real message.
+        :param typing_delay: Seconds between each keystroke. Overrides the instance-level default.
+        :param submit: Whether to press Enter after composing the message.
         """
 
     @abstractmethod
     def get_last_response(
         self, get_markdown: bool = False, remove_watermark: bool = False
-    ) -> "AssistantMessage":
+    ) -> AssistantMessage:
         """
         Retrieve the last response from the chat interface.
 
@@ -256,19 +255,18 @@ class Scraper(ABC):
     def query(
         self,
         message: str,
-        timeout: float = None,
         attachments: list[str | Path] = None,
         paste: bool = False,
         fake_typing: bool = True,
         typing_delay: float = None,
         get_markdown: bool = False,
         remove_watermark: bool = False,
-    ) -> "AssistantMessage":
+        timeout: float = None,
+    ) -> AssistantMessage:
         """
         Send a message, wait for the response to complete, and return it.
 
         :param message: Text to send.
-        :param timeout: Maximum seconds to wait for the response before raising TimeoutException. Defaults to 5 minutes.
         :param attachments: List of file paths to attach. See
                             ``SUPPORTED_ATTACHMENTS`` on the class for allowed types.
         :param paste: If True, paste the message instead of typing it character by character.
@@ -278,6 +276,7 @@ class Scraper(ABC):
         :param typing_delay: Seconds between each keystroke. Overrides the instance-level default.
         :param get_markdown: If True, return the raw markdown source instead of plain text.
         :param remove_watermark: If True, remove the watermark from any downloaded image.
+        :param timeout: Maximum seconds to wait for the response before raising TimeoutException. Defaults to 5 minutes.
         :return: AssistantMessage with text and image fields (either may be None, but not both).
         """
         self.send_message(
@@ -297,7 +296,7 @@ class Scraper(ABC):
         message: str,
         input_box: WebElement,
         typing_delay: float = None,
-    ):
+    ) -> Self:
         delay = typing_delay if typing_delay is not None else self.typing_delay
         for char in message:
             if char == "\n":  # Handle Newline: Shift+Enter
@@ -319,7 +318,7 @@ class Scraper(ABC):
         input_box: WebElement,
         fake_typing=True,
         typing_delay: float = None,
-    ):
+    ) -> Self:
         if fake_typing:
             self._type_into(
                 "Some fake text... " * 20, input_box, typing_delay=typing_delay
@@ -334,7 +333,7 @@ class Scraper(ABC):
         self.sleep(2)
         return self
 
-    def sleep(self, t):
+    def sleep(self, t) -> Self:
         """
         Sleep for approximately t seconds, with a small random jitter to appear more human-like.
 
@@ -347,17 +346,17 @@ class Scraper(ABC):
 
         return self
 
-    def long_wait(self):
+    def long_wait(self) -> Self:
         """Wait for the default long duration (5 minutes). Use after sending a prompt
         that triggers image generation or a slow response."""
         return self.sleep(LONG_WAIT)
 
-    def short_wait(self):
+    def short_wait(self) -> Self:
         """Wait for the default short duration (7 seconds). Use after UI interactions
         that need a moment to settle."""
         return self.sleep(SHORT_WAIT)
 
-    def refresh_page(self):
+    def refresh_page(self) -> Self:
         """Reload the current page."""
         self.driver.refresh()
         return self
@@ -453,7 +452,17 @@ class Scraper(ABC):
         marker.touch()
 
     @classmethod
-    def simple_query(cls, message, attachments=None, timeout=None):
+    def simple_query(
+        cls,
+        message: str,
+        attachments: list[str | Path] = None,
+        paste: bool = False,
+        fake_typing: bool = True,
+        typing_delay: float = None,
+        get_markdown: bool = False,
+        remove_watermark: bool = False,
+        timeout: float = None,
+    ) -> AssistantMessage:
         """
         Open the browser, send a message, and return the response.
 
@@ -462,16 +471,33 @@ class Scraper(ABC):
         returns the full AssistantMessage.
 
         :param message: Text to send.
-        :param attachments: Optional list of file paths to attach.
-        :param timeout: Maximum seconds to wait for the response. Defaults to 5 minutes.
-        :return: AssistantMessage with text and image fields.
+        :param attachments: List of file paths to attach. See
+                            ``SUPPORTED_ATTACHMENTS`` on the class for allowed types.
+        :param paste: If True, paste the message instead of typing it character by character.
+                      Useful for long messages where typing is too slow.
+        :param fake_typing: When paste=True, type dummy text first to avoid bot detection,
+                            then replace it with the real message.
+        :param typing_delay: Seconds between each keystroke. Overrides the instance-level default.
+        :param get_markdown: If True, return the raw markdown source instead of plain text.
+        :param remove_watermark: If True, remove the watermark from any downloaded image.
+        :param timeout: Maximum seconds to wait for the response before raising TimeoutException. Defaults to 5 minutes.
+        :return: AssistantMessage with text and image fields (either may be None, but not both).
         """
         scraper = cls()
         try:
             response = (
                 scraper.open_url()
                 .short_wait()
-                .query(message, attachments=attachments, timeout=timeout)
+                .query(
+                    message,
+                    timeout=timeout,
+                    attachments=attachments,
+                    paste=paste,
+                    fake_typing=fake_typing,
+                    typing_delay=typing_delay,
+                    get_markdown=get_markdown,
+                    remove_watermark=remove_watermark,
+                )
             )
         finally:
             scraper.close()
