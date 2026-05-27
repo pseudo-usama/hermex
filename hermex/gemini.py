@@ -145,9 +145,13 @@ class Gemini(Scraper):
             # The input is display:none — unhide it so Selenium accepts send_keys.
             # send_keys on a file input bypasses the OS dialog entirely (ChromeDriver handles it internally).
             file_input = wait.until(
-                EC.presence_of_element_located((By.CSS_SELECTOR, 'input[name="Filedata"]'))
+                EC.presence_of_element_located(
+                    (By.CSS_SELECTOR, 'input[name="Filedata"]')
+                )
             )
-            self.driver.execute_script("arguments[0].style.display = 'block';", file_input)
+            self.driver.execute_script(
+                "arguments[0].style.display = 'block';", file_input
+            )
             file_input.send_keys("\n".join(str(p) for p in resolved))
         finally:
             # Best-effort restore. If the page/session is in a bad state the restore
