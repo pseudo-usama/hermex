@@ -20,6 +20,10 @@
   </a>
 </p>
 
+<p align="center">
+  <video src="https://github.com/pseudo-usama/hermex/raw/main/docs/content/assets/demo.mp4" controls width="720"></video>
+</p>
+
 ---
 
 ChatGPT and Gemini are incredibly capable — but their official APIs are expensive, and for many tasks you simply don't need them. If you want to run OCR on an image, generate artwork, extract text from a screenshot, or just ask a quick question in a script, paying per-token for API access is overkill when the free web UI can do the same thing.
