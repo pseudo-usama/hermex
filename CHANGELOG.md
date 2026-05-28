@@ -4,7 +4,11 @@
 
 ### Fixed
 - `Gemini.get_state()` rewritten for the latest UI: the send/stop button moved out of `[data-node-type="input-area"]` and the mic-button container is no longer the source of truth for whether the input has content. State is now derived from the `[data-test-id="send-button-container"]` element — `stop` class → `GENERATING`, missing `has-input` class → `IDLE`, `aria-disabled="true"` → `UPLOADING`, otherwise `TYPING`. Works on both desktop and mobile layouts
+
+### Changed
 - `Gemini.get_last_response()` now waits ~1.5 s before clicking the image download button, giving the button time to become responsive after the response finishes rendering
+
+## [0.4.0] - 2026-05-27
 
 ### Added
 - `simple_query()` now accepts `paste`, `fake_typing`, `typing_delay`, `get_markdown`, and `remove_watermark`, forwarding them to `query()`
