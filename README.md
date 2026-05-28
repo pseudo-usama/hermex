@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <video src="https://github.com/pseudo-usama/hermex/raw/main/docs/content/assets/demo.mp4" controls width="720"></video>
+  <video src="https://github.com/user-attachments/assets/2bd2196a-89e1-4182-9173-3283c99d0436" controls width="720"></video>
 </p>
 
 ---
