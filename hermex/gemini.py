@@ -168,6 +168,7 @@ class Gemini(Scraper):
         self, get_markdown=False, remove_watermark=False
     ) -> AssistantMessage:
         def _get_img(element: WebElement):
+            self.sleep(1.5)
             element.find_element(
                 By.TAG_NAME, "download-generated-image-button"
             ).find_element(By.TAG_NAME, "button").click()
@@ -210,32 +211,25 @@ class Gemini(Scraper):
         return AssistantMessage(text=text_content, image=img)
 
     def get_state(self) -> State:
-        input_area = self.driver.find_element(
-            By.CSS_SELECTOR, '[data-node-type="input-area"]'
+        container = self.driver.find_element(
+            By.CSS_SELECTOR, '[data-test-id="send-button-container"]'
         )
+        button = container.find_element(By.CSS_SELECTOR, "gem-icon-button.send-button")
+        classes = (button.get_attribute("class") or "").split()
 
-        send_stop = input_area.find_element(
-            By.CSS_SELECTOR, '[aria-label="Send message"], [aria-label="Stop response"]'
-        )
-        # While generating, Gemini swaps the send button's aria-label to "Stop response".
-        if send_stop.get_attribute("aria-label") == "Stop response":
+        # While generating, the send button is swapped for a stop button (class "stop",
+        # aria-label "Stop response"). Using the class avoids breaking on label localization.
+        if "stop" in classes:
             return State.GENERATING
 
-        # During upload, the send button is disabled (aria-disabled="true") but still
-        # focusable (tabindex="0"). In IDLE the button is also disabled but tabindex="-1",
-        # so tabindex is the only signal that distinguishes the two states.
-        if (
-            send_stop.get_attribute("aria-disabled") == "true"
-            and send_stop.get_attribute("tabindex") == "0"
-        ):
+        # The "has-input" class is added whenever the input box has content. Without it,
+        # the box is empty and the UI is idle.
+        if "has-input" not in classes:
+            return State.IDLE
+
+        # With content, the button is enabled (TYPING) unless an upload is in progress,
+        # in which case it is disabled (aria-disabled="true") until the upload completes.
+        if button.get_attribute("aria-disabled") == "true":
             return State.UPLOADING
 
-        # When the input has content, Gemini hides the mic button to reveal the send button.
-        mic = input_area.find_element(By.CSS_SELECTOR, '[aria-label="Microphone"]')
-        container = mic.find_element(
-            By.XPATH, 'ancestor::*[contains(@class, "mic-button-container")]'
-        )
-        if "hidden" in container.get_attribute("class"):
-            return State.TYPING
-
-        return State.IDLE
+        return State.TYPING
