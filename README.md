@@ -174,4 +174,4 @@ response = gemini.query("Generate an image of a sunset.", remove_watermark=True)
 
 - Bot detection is mitigated through per-character typing delays, fake typing before paste, a persistent browser profile, and a spoofed user agent. Avoid running headless for sensitive sessions.
 - Browser profile and session data are stored in the platform data directory (`~/Library/Application Support/hermex` on macOS).
-- See [CHANGELOG.md](CHANGELOG.md) for the full release history.
+- See [CHANGELOG.md](https://github.com/pseudo-usama/hermex/blob/main/CHANGELOG.md) for the full release history.
