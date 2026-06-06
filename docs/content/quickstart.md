@@ -17,7 +17,7 @@ ChatGPT.setup()  # for ChatGPT
 
 A browser window will open. Browse around for a moment, then close the window. If you need features that require login (e.g. file upload on Gemini), log in during this session — Hermex will reuse the saved session in all future runs.
 
-You only need to do this once. Repeat it if your session expires.
+You only need to do this once. Repeat it if your session expires. To wipe all saved data (browser profile, session cookies) and start fresh, call `hermex.clear_data()` before re-running setup. See [`clear_data`](api/shared-interface.md#data-management) in the API reference.
 
 !!! note
     ChatGPT works without login for file upload and text queries, but image generation requires a logged-in session. For Gemini, guest mode supports basic text queries — file upload requires a logged-in session.

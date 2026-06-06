@@ -36,7 +36,7 @@ def clear_data(data_dir=_default_data_dir):
     Delete all data stored by Hermex (browser profiles, etc.).
 
     :param data_dir: Root data directory to remove. Defaults to the platform-appropriate
-        Hermex data directory. Pass a custom path if you initialised scrapers with one.
+        Hermex data directory. Pass a custom path if you initialized scrapers with one.
     """
     data_dir = Path(data_dir).expanduser()
     if data_dir.exists():

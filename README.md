@@ -11,7 +11,6 @@
   <a href="https://pypi.org/project/hermex">
     <img src="https://img.shields.io/pypi/pyversions/hermex?color=3cb371" alt="Python 3.11+"/>
   </a>
-  <img src="https://img.shields.io/badge/license-MIT-blue" alt="MIT License"/>
   <a href="https://github.com/pseudo-usama/hermex">
     <img src="https://img.shields.io/badge/GitHub-Hermex-181717?logo=github" alt="GitHub Repo"/>
   </a>
@@ -45,7 +44,7 @@ It uses undetected-chromedriver under the hood to avoid bot detection, and reuse
 pip install hermex
 ```
 
-Requires Python 3.11+ and Google Chrome 130+.
+Requires Python 3.11+ and Google Chrome 130+
 
 ## First-time setup
 

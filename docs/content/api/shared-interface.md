@@ -71,3 +71,9 @@ Run `setup()` once per machine before using Hermex for the first time. It builds
 ::: hermex.scraper_base.Scraper.refresh_page
 
 ::: hermex.scraper_base.Scraper.get_current_url
+
+---
+
+## Data management
+
+::: hermex.clear_data

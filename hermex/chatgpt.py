@@ -108,12 +108,13 @@ class ChatGPT(Scraper):
 
         def _get_img(element: WebElement):
             try:
-                WebDriverWait(self.driver, 5).until(
-                    lambda _: element.find_elements(By.CSS_SELECTOR, "img")
+                image_elems = WebDriverWait(self.driver, 5).until(
+                    lambda _: element.find_elements(
+                        By.CSS_SELECTOR, '[class*="imagegen-image"] img'
+                    )
                 )
             except TimeoutException:
                 raise NoSuchElementException("No image element in this response.")
-            image_elems = element.find_elements(By.CSS_SELECTOR, "img")
             self.driver.execute_script("arguments[0].click();", image_elems[0])
             self.sleep(2)
             down_btn = wait.until(
