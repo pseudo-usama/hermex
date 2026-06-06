@@ -1,6 +1,6 @@
 # Changelog
 
-## [0.4.2] - 2026-06-04
+## [0.4.2] - 2026-06-06
 
 ### Fixed
 - `ChatGPT.get_last_response()` no longer crashes when the response includes web-search result images — the previous `img` selector grabbed the first `<img>` in the turn, so a web-search thumbnail was clicked instead of the generated image, the "Save" button never appeared, and `wait.until(...)` raised an uncaught `TimeoutException`. The selector is now scoped to `[class*="imagegen-image"] img`, which matches only the generated-image wrapper and skips the `group/search-image` thumbnails
