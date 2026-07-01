@@ -97,8 +97,20 @@ class ChatGPT(Scraper):
             resolved.append(file_path)
 
         file_input = self.driver.find_element(By.CSS_SELECTOR, "#upload-photos")
+        # #upload-photos is a persistent element, so restore its original display
+        # afterward instead of leaving our override on the DOM for the whole session.
+        original_display = self.driver.execute_script(
+            "return arguments[0].style.display;", file_input
+        )
         self.driver.execute_script("arguments[0].style.display = 'block';", file_input)
-        file_input.send_keys("\n".join(str(p) for p in resolved))
+        try:
+            file_input.send_keys("\n".join(str(p) for p in resolved))
+        finally:
+            self.driver.execute_script(
+                "arguments[0].style.display = arguments[1];",
+                file_input,
+                original_display,
+            )
 
     def get_last_response(
         self, get_markdown: bool = False, remove_watermark: bool = False

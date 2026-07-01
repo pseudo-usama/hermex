@@ -122,6 +122,8 @@ class Gemini(Scraper):
             window.__restoreFileClick = () => { HTMLInputElement.prototype.click = orig; };
         """)
 
+        file_input = None
+        original_display = None
         try:
             self.driver.find_element(
                 By.CSS_SELECTOR,
@@ -151,6 +153,9 @@ class Gemini(Scraper):
                     (By.CSS_SELECTOR, 'input[name="Filedata"]')
                 )
             )
+            original_display = self.driver.execute_script(
+                "return arguments[0].style.display;", file_input
+            )
             self.driver.execute_script(
                 "arguments[0].style.display = 'block';", file_input
             )
@@ -158,6 +163,15 @@ class Gemini(Scraper):
         finally:
             # Best-effort restore. If the page/session is in a bad state the restore
             # itself may fail — swallow that so it never masks the original upload error.
+            if file_input is not None:
+                try:
+                    self.driver.execute_script(
+                        "arguments[0].style.display = arguments[1];",
+                        file_input,
+                        original_display,
+                    )
+                except WebDriverException:
+                    pass
             try:
                 self.driver.execute_script(
                     "window.__restoreFileClick && window.__restoreFileClick();"

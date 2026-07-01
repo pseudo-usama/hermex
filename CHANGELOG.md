@@ -10,6 +10,9 @@
 - Parameters that accept `None` (e.g. `attachments`, `typing_delay`, `timeout`) are now annotated as explicit `X | None` instead of implicit-`Optional`, so strict type checkers no longer flag them
 - `clear_data()` resolves its default data directory the same way as `__init__()` and `setup()` (via a `None` sentinel) rather than binding the default at import time; behavior is unchanged
 
+### Fixed
+- `ChatGPT._upload_files()` and `Gemini._upload_files()` now restore the file input's original `display` style after upload instead of leaving the temporary `display: block` override on the DOM — the override was permanent on ChatGPT's persistent `#upload-photos` input. The restore runs in a `finally` block so it happens even if the upload fails
+
 ## [0.4.2] - 2026-06-06
 
 ### Fixed
