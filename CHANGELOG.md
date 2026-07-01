@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.4.3] - 2026-07-01
+
+### Added
+- Shipped a `py.typed` marker (PEP 561) and the `Typing :: Typed` classifier, so type checkers (mypy, pyright) recognize Hermex as a typed package — consumers now get full type information for the public API instead of `Any`
+- Complete type annotations across the public API and internal helpers, covering both parameters and return types
+
+### Changed
+- Parameters that accept `None` (e.g. `attachments`, `typing_delay`, `timeout`) are now annotated as explicit `X | None` instead of implicit-`Optional`, so strict type checkers no longer flag them
+- `clear_data()` resolves its default data directory the same way as `__init__()` and `setup()` (via a `None` sentinel) rather than binding the default at import time; behavior is unchanged
+
 ## [0.4.2] - 2026-06-06
 
 ### Fixed

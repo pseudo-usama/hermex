@@ -25,7 +25,8 @@ class ChatGPT(Scraper):
 
     SUPPORTED_ATTACHMENTS = { ".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf", ".csv", ".txt", ".json" }  # fmt: skip
 
-    def open_url(self, url="https://chatgpt.com", timeout=30):
+    def open_url(self, url: str | None = None, timeout: float = 30) -> Self:
+        url = url or "https://chatgpt.com"
         if "chatgpt.com" not in url:
             raise ValueError(f"Expected a chatgpt.com URL, got: {url}")
         super().open_url(url, timeout)
@@ -38,7 +39,7 @@ class ChatGPT(Scraper):
             )
         )
 
-    def _detect_login(self):
+    def _detect_login(self) -> None:
         try:
             WebDriverWait(self.driver, 3).until(
                 EC.presence_of_element_located(
@@ -52,10 +53,10 @@ class ChatGPT(Scraper):
     def send_message(
         self,
         message: str,
-        attachments: list[str | Path] = None,
+        attachments: list[str | Path] | None = None,
         paste: bool = False,
         fake_typing: bool = True,
-        typing_delay: float = None,
+        typing_delay: float | None = None,
         submit: bool = True,
     ) -> Self:
         if attachments:
@@ -83,7 +84,7 @@ class ChatGPT(Scraper):
 
         return self
 
-    def _upload_files(self, file_paths: list[str | Path]):
+    def _upload_files(self, file_paths: list[str | Path]) -> None:
         resolved = []
         for file_path in file_paths:
             file_path = Path(file_path).resolve()
@@ -100,7 +101,7 @@ class ChatGPT(Scraper):
         file_input.send_keys("\n".join(str(p) for p in resolved))
 
     def get_last_response(
-        self, get_markdown=False, remove_watermark=False
+        self, get_markdown: bool = False, remove_watermark: bool = False
     ) -> AssistantMessage:
         # ChatGPT does not watermark generated images, so remove_watermark is a no-op.
 
