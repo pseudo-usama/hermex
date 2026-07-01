@@ -1,6 +1,19 @@
 # Changelog
 
-## [0.4.2] - 2026-06-04
+## [0.4.3] - 2026-07-01
+
+### Added
+- Shipped a `py.typed` marker (PEP 561) and the `Typing :: Typed` classifier, so type checkers (mypy, pyright) recognize Hermex as a typed package — consumers now get full type information for the public API instead of `Any`
+- Complete type annotations across the public API and internal helpers, covering both parameters and return types
+
+### Changed
+- Parameters that accept `None` (e.g. `attachments`, `typing_delay`, `timeout`) are now annotated as explicit `X | None` instead of implicit-`Optional`, so strict type checkers no longer flag them
+- `clear_data()` resolves its default data directory the same way as `__init__()` and `setup()` (via a `None` sentinel) rather than binding the default at import time; behavior is unchanged
+
+### Fixed
+- `ChatGPT._upload_files()` and `Gemini._upload_files()` now restore the file input's original `display` style after upload instead of leaving the temporary `display: block` override on the DOM — the override was permanent on ChatGPT's persistent `#upload-photos` input. The restore runs in a `finally` block so it happens even if the upload fails
+
+## [0.4.2] - 2026-06-06
 
 ### Fixed
 - `ChatGPT.get_last_response()` no longer crashes when the response includes web-search result images — the previous `img` selector grabbed the first `<img>` in the turn, so a web-search thumbnail was clicked instead of the generated image, the "Save" button never appeared, and `wait.until(...)` raised an uncaught `TimeoutException`. The selector is now scoped to `[class*="imagegen-image"] img`, which matches only the generated-image wrapper and skips the `group/search-image` thumbnails

@@ -1,4 +1,4 @@
-.PHONY: fmt docs docs-build deploy
+.PHONY: fmt typecheck docs docs-build deploy
 
 # macOS only: point Cairo (social-cards plugin) at Homebrew's lib dir. Must be set inline
 # in each recipe — SIP strips DYLD_* from /bin/sh, so make-level `export` doesn't survive.
@@ -9,6 +9,9 @@ fmt:
 	ruff format .
 	ruff check --select I --fix .
 	ruff check .
+
+typecheck:
+	mypy hermex/
 
 docs:
 	cd docs && DYLD_FALLBACK_LIBRARY_PATH=$(CAIRO_LIB) mkdocs serve -a localhost:8080 --livereload

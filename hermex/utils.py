@@ -31,13 +31,16 @@ def get_user_agent(chrome_version: int) -> str:
         )
 
 
-def clear_data(data_dir=_default_data_dir):
+def clear_data(data_dir: str | Path | None = None) -> None:
     """
     Delete all data stored by Hermex (browser profiles, etc.).
 
     :param data_dir: Root data directory to remove. Defaults to the platform-appropriate
         Hermex data directory. Pass a custom path if you initialized scrapers with one.
     """
+    if data_dir is None:
+        data_dir = _default_data_dir
+
     data_dir = Path(data_dir).expanduser()
     if data_dir.exists():
         shutil.rmtree(data_dir)

@@ -12,6 +12,7 @@ from typing import Self
 import undetected_chromedriver as uc
 from selenium.common.exceptions import TimeoutException, WebDriverException
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.remote.webelement import WebElement
 
 from hermex.config import LONG_WAIT, MIN_CHROME_VERSION, SHORT_WAIT
@@ -59,13 +60,13 @@ class Scraper(ABC):
 
     def __init__(
         self,
-        chrome_version=None,
-        download_dir=Path("."),
-        headless=False,
-        typing_delay=0.025,
-        disable_web_security=True,
-        data_dir=None,
-    ):
+        chrome_version: int | None = None,
+        download_dir: str | Path = Path("."),
+        headless: bool = False,
+        typing_delay: float = 0.025,
+        disable_web_security: bool = True,
+        data_dir: str | Path | None = None,
+    ) -> None:
         """
         :param chrome_version: Chrome major version number. Defaults to auto-detecting
             the installed Chrome version.
@@ -88,11 +89,11 @@ class Scraper(ABC):
         self.browser_profile_dir = self._data_dir / "chrome_profile"
         self.chrome_version = chrome_version or _detect_chrome_version()
         self.disable_web_security = disable_web_security
-        self._temp_dir = None
-        self._selenium_download_dir = None
+        self._temp_dir: TemporaryDirectory = None  # type: ignore[assignment]
+        self._selenium_download_dir: Path = None  # type: ignore[assignment]
         self.download_dir = Path(download_dir)
         self.headless = headless
-        self.driver = None
+        self.driver: WebDriver = None  # type: ignore[assignment]
         self.typing_delay = typing_delay
         self.is_logged_in = False
 
@@ -146,7 +147,7 @@ class Scraper(ABC):
         )
         return self
 
-    def open_url(self, url=None, timeout=30) -> Self:
+    def open_url(self, url: str | None = None, timeout: float = 30) -> Self:
         """
         Open a URL in the browser and wait for the page to be ready.
 
@@ -157,7 +158,7 @@ class Scraper(ABC):
         if not self.driver:
             self._initialize_driver()
 
-        self.driver.get(url)
+        self.driver.get(url)  # type: ignore[arg-type]  # subclasses always pass a resolved URL
         self.wait_for_page_load(timeout)
         self._detect_login()
 
@@ -175,10 +176,10 @@ class Scraper(ABC):
     def send_message(
         self,
         message: str,
-        attachments: list[str | Path] = None,
+        attachments: list[str | Path] | None = None,
         paste: bool = False,
         fake_typing: bool = True,
-        typing_delay: float = None,
+        typing_delay: float | None = None,
         submit: bool = True,
     ) -> Self:
         """
@@ -224,7 +225,7 @@ class Scraper(ABC):
             wait_until_idle() instead, which has built-in error tolerance.
         """
 
-    def _wait_until_state(self, target: State, timeout: float = None) -> None:
+    def _wait_until_state(self, target: State, timeout: float | None = None) -> None:
         if timeout is None:
             timeout = LONG_WAIT
         start = time.time()
@@ -244,7 +245,7 @@ class Scraper(ABC):
             f"Chatbot did not reach state '{target}' within {timeout}s."
         )
 
-    def wait_until_idle(self, timeout: float = None) -> None:
+    def wait_until_idle(self, timeout: float | None = None) -> None:
         """
         Block until the chatbot has finished generating its response.
 
@@ -255,13 +256,13 @@ class Scraper(ABC):
     def query(
         self,
         message: str,
-        attachments: list[str | Path] = None,
+        attachments: list[str | Path] | None = None,
         paste: bool = False,
         fake_typing: bool = True,
-        typing_delay: float = None,
+        typing_delay: float | None = None,
         get_markdown: bool = False,
         remove_watermark: bool = False,
-        timeout: float = None,
+        timeout: float | None = None,
     ) -> AssistantMessage:
         """
         Send a message, wait for the response to complete, and return it.
@@ -295,7 +296,7 @@ class Scraper(ABC):
         self,
         message: str,
         input_box: WebElement,
-        typing_delay: float = None,
+        typing_delay: float | None = None,
     ) -> Self:
         delay = typing_delay if typing_delay is not None else self.typing_delay
         for char in message:
@@ -316,8 +317,8 @@ class Scraper(ABC):
         self,
         message: str,
         input_box: WebElement,
-        fake_typing=True,
-        typing_delay: float = None,
+        fake_typing: bool = True,
+        typing_delay: float | None = None,
     ) -> Self:
         if fake_typing:
             self._type_into(
@@ -333,7 +334,7 @@ class Scraper(ABC):
         self.sleep(2)
         return self
 
-    def sleep(self, t) -> Self:
+    def sleep(self, t: float) -> Self:
         """
         Sleep for approximately t seconds, with a small random jitter to appear more human-like.
 
@@ -361,7 +362,7 @@ class Scraper(ABC):
         self.driver.refresh()
         return self
 
-    def get_current_url(self, only_base=False):
+    def get_current_url(self, only_base: bool = False) -> str:
         """
         Return the current browser URL.
 
@@ -372,7 +373,7 @@ class Scraper(ABC):
             return url.split("?")[0]
         return url
 
-    def _get_downloaded_file(self, wait_time=60):
+    def _get_downloaded_file(self, wait_time: float = 60) -> Path:
         """Wait for a file to be downloaded and return its path"""
         elapsed = 0
         poll_interval = 1
@@ -394,18 +395,18 @@ class Scraper(ABC):
 
         raise TimeoutException("File download timed out.")
 
-    def close(self):
+    def close(self) -> None:
         """Close the browser and clean up"""
         if self.driver:
             self.driver.quit()
-            self.driver = None
+            self.driver = None  # type: ignore[assignment]
         if self._temp_dir:
             self._temp_dir.cleanup()
-            self._temp_dir = None
-            self._selenium_download_dir = None
+            self._temp_dir = None  # type: ignore[assignment]
+            self._selenium_download_dir = None  # type: ignore[assignment]
 
     @classmethod
-    def setup(cls, data_dir=None):
+    def setup(cls, data_dir: str | Path | None = None) -> None:
         """
         First-time setup required before using Hermex.
 
@@ -455,13 +456,13 @@ class Scraper(ABC):
     def simple_query(
         cls,
         message: str,
-        attachments: list[str | Path] = None,
+        attachments: list[str | Path] | None = None,
         paste: bool = False,
         fake_typing: bool = True,
-        typing_delay: float = None,
+        typing_delay: float | None = None,
         get_markdown: bool = False,
         remove_watermark: bool = False,
-        timeout: float = None,
+        timeout: float | None = None,
     ) -> AssistantMessage:
         """
         Open the browser, send a message, and return the response.

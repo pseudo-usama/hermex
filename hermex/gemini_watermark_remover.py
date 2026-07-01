@@ -5,17 +5,17 @@ import numpy as np
 
 _ASSETS_DIR = files("hermex") / "assets"
 
-_alpha_map_small = None
-_alpha_map_large = None
+_alpha_map_small: np.ndarray | None = None
+_alpha_map_large: np.ndarray | None = None
 
 
-def _calc_alpha(img, size):
+def _calc_alpha(img: np.ndarray, size: tuple[int, int]) -> np.ndarray:
     if img.shape[:2] != size:
         img = cv2.resize(img, size, interpolation=cv2.INTER_AREA)
     return np.max(img, axis=2).astype(np.float32) / 255.0
 
 
-def _load_assets():
+def _load_assets() -> None:
     global _alpha_map_small, _alpha_map_large
     if _alpha_map_small is not None:
         return
@@ -30,14 +30,14 @@ def _load_assets():
     _alpha_map_large = _calc_alpha(bg_large, (96, 96))
 
 
-def _get_config(width, height):
+def _get_config(width: int, height: int) -> dict:
     if width > 1024 and height > 1024:
         return {"margin": 64, "size": 96, "map": _alpha_map_large}
     else:
         return {"margin": 32, "size": 48, "map": _alpha_map_small}
 
 
-def gemini_remove_watermark(input_path: str, output_path: str):
+def gemini_remove_watermark(input_path: str, output_path: str) -> None:
     _load_assets()
 
     img = cv2.imread(input_path)

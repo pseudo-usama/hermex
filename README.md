@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <video src="https://github.com/user-attachments/assets/2bd2196a-89e1-4182-9173-3283c99d0436" controls width="720"></video>
+  <video src="https://github.com/user-attachments/assets/2bd2196a-89e1-4182-9173-3283c99d0436" controls width="720" title="Hermex Gemini automation demo" aria-label="Hermex demo: automating Google Gemini in Python without an API key" aria-description="25-second screen recording of the Hermex Python library querying Google Gemini through browser automation. The script attaches a reference image and style notes file, requests a watercolor rendering, and saves the generated image locally — all in 8 lines of code, no API key required."></video>
 </p>
 
 ---
