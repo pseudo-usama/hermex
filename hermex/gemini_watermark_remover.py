@@ -1,4 +1,5 @@
 from importlib.resources import files
+from pathlib import Path
 
 import cv2
 import numpy as np
@@ -43,10 +44,17 @@ def _get_config(width: int, height: int) -> dict:
         return {"margin": 96, "size": 48, "map": _alpha_map_small}
 
 
-def gemini_remove_watermark(input_path: str, output_path: str) -> None:
+def remove_gemini_watermark(input_path: str | Path, output_path: str | Path) -> None:
+    """
+    Remove the Gemini watermark from an image file.
+
+    :param input_path: Path to the image to process.
+    :param output_path: Path to write the result to. Pass the same value as
+        ``input_path`` to overwrite the file in place.
+    """
     _load_assets()
 
-    img = cv2.imread(input_path)
+    img = cv2.imread(str(input_path))
     if img is None:
         raise ValueError(f"Could not read input image: {input_path}")
 
@@ -73,4 +81,4 @@ def gemini_remove_watermark(input_path: str, output_path: str) -> None:
     final_roi = np.where(mask_3ch, restored_roi, roi)
 
     img[y : y + size, x : x + size] = final_roi.astype(np.uint8)
-    cv2.imwrite(output_path, img)
+    cv2.imwrite(str(output_path), img)

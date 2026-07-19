@@ -13,7 +13,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
 from hermex.exceptions import LoginRequiredError
-from hermex.gemini_watermark_remover import gemini_remove_watermark
+from hermex.gemini_watermark_remover import remove_gemini_watermark
 from hermex.models import AssistantMessage, State
 from hermex.scraper_base import Scraper
 
@@ -221,7 +221,7 @@ class Gemini(Scraper):
             raise RuntimeError("Response contained neither text nor image.")
 
         if remove_watermark and img is not None:
-            gemini_remove_watermark(str(img), str(img))
+            remove_gemini_watermark(str(img), str(img))
 
         return AssistantMessage(text=text_content, image=img)
 

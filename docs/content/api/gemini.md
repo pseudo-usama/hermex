@@ -47,6 +47,16 @@ Gemini watermarks its generated images. Pass `remove_watermark=True` to `query()
 response = gemini.query("Generate an image of a sunset.", remove_watermark=True)
 ```
 
+`remove_gemini_watermark()` is also available standalone, if you want to strip a watermark from an image file without going through `query()` or `get_last_response()`:
+
+```python
+from hermex import remove_gemini_watermark
+
+remove_gemini_watermark("input.png", "output.png")
+```
+
+::: hermex.remove_gemini_watermark
+
 ---
 
 ## Default URL

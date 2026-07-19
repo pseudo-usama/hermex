@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.4.4] - 2026-07-19
+
+### Added
+- `remove_gemini_watermark()` exported from the top-level `hermex` package, so watermarks can be stripped from an image file directly without going through `query()` or `get_last_response()`
+
+### Changed
+- `remove_gemini_watermark()` (formerly the internal `gemini_remove_watermark()`) now accepts `str | Path` for `input_path` and `output_path`, consistent with the rest of the public API
+
+### Fixed
+- Recalibrated the bundled watermark reference assets (`bg_48.png`, `bg_96.png`) to match Gemini's updated watermark — it moved further from the bottom-right corner and is now rendered at roughly half its previous opacity, which previously caused incomplete removal and a faint border artifact
+
 ## [0.4.3] - 2026-07-01
 
 ### Added
