@@ -22,7 +22,7 @@ definitions:
       {%- endif -%}
 
   - &favicon >-
-      {{ config.docs_dir }}/assets/favicon.svg
+      {{ config.docs_dir }}/docs/assets/favicon.svg
 
 tags:
   og:type: website

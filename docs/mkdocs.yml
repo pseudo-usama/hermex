@@ -4,13 +4,15 @@ site_description: Drive ChatGPT and Gemini from Python — no API keys, no billi
 repo_url: https://github.com/pseudo-usama/hermex
 repo_name: pseudo-usama/hermex
 
+# content/index.html is the landing page — mkdocs copies non-Markdown files verbatim,
+# so it lands at /, while content/docs/ becomes /docs/.
 docs_dir: content
 
 theme:
   name: material
   custom_dir: overrides
-  logo: assets/logo.svg
-  favicon: assets/favicon.svg
+  logo: docs/assets/logo.svg
+  favicon: docs/assets/favicon.svg
   icon:
     repo: fontawesome/brands/github
   palette:
@@ -50,9 +52,13 @@ markdown_extensions:
   - admonition
   - pymdownx.details
 
-copyright: Copyright &copy; 2026 Usama
+# target="_self" makes navigation.instant skip this link; without it the swap throws on
+# the landing page's read-only <use href="#..."> and the docs page never goes away.
+copyright: Copyright &copy; 2026 Usama &middot; <a href="/" target="_self">Home</a>
 
 extra:
+  homepage: docs/  # logo stays in the docs; relative so it also resolves on localhost
+  analytics:
   social:
     - icon: material/language-python
       link: https://pypi.org/project/hermex
@@ -65,12 +71,11 @@ extra:
       name: Gemini Watermark Remover
 
 extra_css:
-  - stylesheets/extra.css
+  - docs/stylesheets/extra.css
 
 plugins:
   - search
   - social:
-      cards_layout_dir: overrides/layouts
       cards_layout: hermex
   - mkdocstrings:
       handlers:
@@ -86,16 +91,16 @@ plugins:
             docstring_style: sphinx
 
 nav:
-  - Home: index.md
-  - Installation: installation.md
-  - Quickstart: quickstart.md
+  - Home: docs/index.md
+  - Installation: docs/installation.md
+  - Quickstart: docs/quickstart.md
   - Guides:
-    - Gemini: guides/gemini.md
-    - ChatGPT: guides/chatgpt.md
+    - Gemini: docs/guides/gemini.md
+    - ChatGPT: docs/guides/chatgpt.md
   - API Reference:
-    - Shared Interface: api/shared-interface.md
-    - Gemini: api/gemini.md
-    - ChatGPT: api/chatgpt.md
-    - Models: api/models.md
-    - Exceptions: api/exceptions.md
-  - Changelog: changelog.md
+    - Shared Interface: docs/api/shared-interface.md
+    - Gemini: docs/api/gemini.md
+    - ChatGPT: docs/api/chatgpt.md
+    - Models: docs/api/models.md
+    - Exceptions: docs/api/exceptions.md
+  - Changelog: docs/changelog.md
