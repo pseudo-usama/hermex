@@ -1,5 +1,5 @@
 # Hermex social card layout: white background, teal accent stripe at top,
-# H glyph + wordmark inline, large page title, description below.
+# wordmark, large page title, description below.
 
 definitions:
   - &background_color "#FFFFFF"
@@ -21,8 +21,8 @@ definitions:
         {{ config.site_name }}
       {%- endif -%}
 
-  - &favicon >-
-      {{ config.docs_dir }}/docs/assets/favicon.svg
+  - &wordmark >-
+      {{ config.docs_dir }}/docs/assets/logo.svg
 
 tags:
   og:type: website
@@ -51,25 +51,12 @@ layers:
     background:
       color: *accent_color
 
-  # H glyph (favicon)
-  - size: { width: 60, height: 84 }
-    offset: { x: 64, y: 80 }
+  # Wordmark — the real brand asset, not the site name set in the card font.
+  # Box matches its 5.619 aspect so it isn't letterboxed.
+  - size: { width: 292, height: 52 }
+    offset: { x: 64, y: 96 }
     background:
-      image: *favicon
-
-  # "Hermex" wordmark text, inline next to glyph
-  - size: { width: 400, height: 60 }
-    offset: { x: 148, y: 92 }
-    typography:
-      content: "{{ config.site_name }}"
-      align: start
-      color: *title_color
-      line:
-        amount: 1
-        height: 1.0
-      font:
-        family: *font_family
-        style: Bold
+      image: *wordmark
 
   # Page title
   - size: { width: 1072, height: 200 }
