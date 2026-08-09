@@ -59,6 +59,8 @@ copyright: Copyright &copy; 2026 Usama &middot; <a href="/" target="_self">Home<
 extra:
   homepage: docs/  # logo stays in the docs; relative so it also resolves on localhost
   analytics:
+    provider: google
+    property: G-SLP99EGEE2
   social:
     - icon: material/language-python
       link: https://pypi.org/project/hermex
