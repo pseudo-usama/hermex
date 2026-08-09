@@ -1,0 +1,22 @@
+{
+  "hosting": {
+    "public": "site",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "redirects": [
+      {
+        "regex": "^/(?P<page>installation|quickstart|changelog)(?:/.*)?$",
+        "destination": "/docs/:page/",
+        "type": 301
+      },
+      {
+        "regex": "^/(?P<path>(?:guides|api)(?:/.*)?)$",
+        "destination": "/docs/:path",
+        "type": 301
+      }
+    ]
+  }
+}

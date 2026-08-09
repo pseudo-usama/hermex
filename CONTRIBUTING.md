@@ -34,7 +34,7 @@ To make a bug report useful, please include:
 - Keep PRs small and focused on one change. A selector fix and a new feature should be separate PRs
 - Update `CHANGELOG.md` with an entry under the `Unreleased` heading (follow the existing style — terse, technical, names the symptom and the actual fix).
 - Match the existing code style — `make fmt` handles formatting, but also match naming and structure conventions of nearby code
-- If you change a public method's signature, update `README.md` and the relevant page under `docs/content/`
+- If you change a public method's signature, update `README.md` and the relevant page under `docs/content/docs/`
 - Don't introduce new dependencies without a strong reason — Hermex aims to stay light
 
 ## Scope

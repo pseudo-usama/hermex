@@ -1,8 +1,8 @@
 <p align="center">
   <a href="https://hermex.usama.ai/">
-    <img src="https://raw.githubusercontent.com/pseudo-usama/hermex/main/docs/content/assets/logo.svg" alt="Hermex" width="450" style="margin: 24px 0;"/>
+    <img src="https://raw.githubusercontent.com/pseudo-usama/hermex/main/docs/content/docs/assets/logo.svg" alt="Hermex" width="640"/>
   </a>
-  <br>
+  <br><br>
   <em>Drive ChatGPT and Gemini from Python — no API keys, no billing, just the free web UI.</em>
   <br><br>
   <a href="https://pypi.org/project/hermex">
@@ -14,7 +14,7 @@
   <a href="https://github.com/pseudo-usama/hermex">
     <img src="https://img.shields.io/badge/GitHub-Hermex-181717?logo=github" alt="GitHub Repo"/>
   </a>
-  <a href="https://hermex.usama.ai">
+  <a href="https://hermex.usama.ai/docs/">
     <img src="https://img.shields.io/badge/docs-hermex.usama.ai-3cb371" alt="Docs"/>
   </a>
 </p>
@@ -147,7 +147,7 @@ Both `Gemini` and `ChatGPT` share the same interface — all methods below apply
 | `close()` | Close the browser |
 | `setup()` | One-time login setup (class method) |
 
-See the [full documentation](https://hermex.usama.ai) for detailed guides on Gemini and ChatGPT.
+See the [full documentation](https://hermex.usama.ai/docs/) for detailed guides on Gemini and ChatGPT.
 
 ### Constructor options
 
