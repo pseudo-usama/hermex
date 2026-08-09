@@ -30,9 +30,9 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://hermex.usama.ai"
-Documentation = "https://hermex.usama.ai"
+Documentation = "https://hermex.usama.ai/docs/"
 Repository = "https://github.com/pseudo-usama/hermex"
-Changelog = "https://hermex.usama.ai/changelog/"
+Changelog = "https://hermex.usama.ai/docs/changelog/"
 
 [project.optional-dependencies]
 dev = ["ruff", "mypy", "mkdocs", "mkdocs-material[imaging]", "mkdocstrings[python]"]
