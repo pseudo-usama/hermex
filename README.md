@@ -1,8 +1,8 @@
 <p align="center">
   <a href="https://hermex.usama.ai/">
-    <img src="https://raw.githubusercontent.com/pseudo-usama/hermex/main/docs/content/docs/assets/logo.svg" alt="Hermex" width="450" style="margin: 24px 0;"/>
+    <img src="https://raw.githubusercontent.com/pseudo-usama/hermex/main/docs/content/docs/assets/logo.svg" alt="Hermex" width="640"/>
   </a>
-  <br>
+  <br><br>
   <em>Drive ChatGPT and Gemini from Python — no API keys, no billing, just the free web UI.</em>
   <br><br>
   <a href="https://pypi.org/project/hermex">
