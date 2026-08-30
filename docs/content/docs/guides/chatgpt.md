@@ -85,6 +85,9 @@ response = chatgpt.query(
 print(response.text)
 ```
 
+!!! warning
+    `get_markdown=True` reads the response from the OS clipboard after clicking ChatGPT's copy button, which does not work in headless mode — Chrome disables clipboard-write when the browser has no visible window. This raises [`HeadlessClipboardError`](../api/exceptions.md) if `headless=True`. Use `get_markdown=False` in headless mode instead.
+
 ## Long messages
 
 Use `paste=True` for long prompts to avoid slow character-by-character typing:
