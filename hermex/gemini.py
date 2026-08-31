@@ -12,8 +12,8 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-from hermex.exceptions import LoginRequiredError
-from hermex.gemini_watermark_remover import gemini_remove_watermark
+from hermex.exceptions import HeadlessClipboardError, LoginRequiredError
+from hermex.gemini_watermark_remover import remove_gemini_watermark
 from hermex.models import AssistantMessage, State
 from hermex.scraper_base import Scraper
 
@@ -182,6 +182,14 @@ class Gemini(Scraper):
     def get_last_response(
         self, get_markdown: bool = False, remove_watermark: bool = False
     ) -> AssistantMessage:
+        if get_markdown and self.headless:
+            raise HeadlessClipboardError(
+                "get_markdown=True reads the response via the copy-button "
+                "widget and the OS clipboard, which Chrome disables in "
+                "headless mode. Use get_markdown=False, or run with "
+                "headless=False."
+            )
+
         def _get_img(element: WebElement):
             self.sleep(1.5)
             element.find_element(
@@ -191,8 +199,17 @@ class Gemini(Scraper):
             return img
 
         def _get_text(element: WebElement, get_markdown):
-            elem = element.find_element(By.CSS_SELECTOR, ".markdown")
+            elem = element.find_element(By.TAG_NAME, "message-content")
             inner_text = elem.text.strip()
+
+            # Gemini sometimes nests follow-up-question widgets (<elicitations>,
+            # <follow-up>) inside message-content; drop their text from the reading
+            for widget in elem.find_elements(
+                By.CSS_SELECTOR, "elicitations, follow-up"
+            ):
+                widget_text = widget.text.strip()
+                if widget_text:
+                    inner_text = inner_text.replace(widget_text, "").strip()
             if inner_text == "":
                 return None
             if not get_markdown:
@@ -221,14 +238,19 @@ class Gemini(Scraper):
             raise RuntimeError("Response contained neither text nor image.")
 
         if remove_watermark and img is not None:
-            gemini_remove_watermark(str(img), str(img))
+            remove_gemini_watermark(str(img), str(img))
 
         return AssistantMessage(text=text_content, image=img)
 
     def get_state(self) -> State:
-        container = self.driver.find_element(
+        containers = self.driver.find_elements(
             By.CSS_SELECTOR, '[data-test-id="send-button-container"]'
         )
+
+        if not containers:
+            return State.IDLE
+
+        container = containers[0]
         button = container.find_element(By.CSS_SELECTOR, "gem-icon-button.send-button")
         classes = (button.get_attribute("class") or "").split()
 

@@ -1,9 +1,14 @@
 from importlib.resources import files
+from pathlib import Path
 
 import cv2
 import numpy as np
 
 _ASSETS_DIR = files("hermex") / "assets"
+
+# The bg_48/bg_96 assets encode the watermark alpha map directly (opacity
+# included). To re-derive after a watermark change, recover alpha from a
+# flat-color sample via (obs - bg)/(255 - bg) using the local background.
 
 _alpha_map_small: np.ndarray | None = None
 _alpha_map_large: np.ndarray | None = None
@@ -31,16 +36,25 @@ def _load_assets() -> None:
 
 
 def _get_config(width: int, height: int) -> dict:
+    # `margin` is the gap in pixels between the watermark box and the
+    # bottom-right corner.
     if width > 1024 and height > 1024:
-        return {"margin": 64, "size": 96, "map": _alpha_map_large}
+        return {"margin": 192, "size": 96, "map": _alpha_map_large}
     else:
-        return {"margin": 32, "size": 48, "map": _alpha_map_small}
+        return {"margin": 96, "size": 48, "map": _alpha_map_small}
 
 
-def gemini_remove_watermark(input_path: str, output_path: str) -> None:
+def remove_gemini_watermark(input_path: str | Path, output_path: str | Path) -> None:
+    """
+    Remove the Gemini watermark from an image file.
+
+    :param input_path: Path to the image to process.
+    :param output_path: Path to write the result to. Pass the same value as
+        ``input_path`` to overwrite the file in place.
+    """
     _load_assets()
 
-    img = cv2.imread(input_path)
+    img = cv2.imread(str(input_path))
     if img is None:
         raise ValueError(f"Could not read input image: {input_path}")
 
@@ -67,4 +81,4 @@ def gemini_remove_watermark(input_path: str, output_path: str) -> None:
     final_roi = np.where(mask_3ch, restored_roi, roi)
 
     img[y : y + size, x : x + size] = final_roi.astype(np.uint8)
-    cv2.imwrite(output_path, img)
+    cv2.imwrite(str(output_path), img)

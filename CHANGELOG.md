@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.4.4] - 2026-08-30
+
+### Added
+- `remove_gemini_watermark()` exported from the top-level `hermex` package, so watermarks can be stripped from an image file directly without going through `query()` or `get_last_response()`
+- `HeadlessClipboardError`, raised by `ChatGPT.get_last_response()` and `Gemini.get_last_response()` when called with `get_markdown=True` while `headless=True` — Chrome's clipboard-write API silently no-ops in headless mode because the document never reports itself as focused, so this now fails loudly instead of returning stale or empty clipboard content
+
+### Changed
+- `remove_gemini_watermark()` (formerly the internal `gemini_remove_watermark()`) now accepts `str | Path` for `input_path` and `output_path`, consistent with the rest of the public API
+
+### Fixed
+- Recalibrated the bundled watermark reference assets (`bg_48.png`, `bg_96.png`) to match Gemini's updated watermark — it moved further from the bottom-right corner and is now rendered at roughly half its previous opacity, which previously caused incomplete removal and a faint border artifact
+- `Gemini.get_state()` no longer raises `NoSuchElementException` when the input is empty and idle — Gemini now removes `[data-test-id="send-button-container"]` from the DOM entirely in that state instead of just hiding it, so absence of the element is now treated as `State.IDLE`
+- `Gemini.get_last_response()` text extraction updated for Gemini's latest markup — the response body is now located via the `message-content` custom element instead of the removed `.markdown` class
+- `Gemini.get_last_response()` no longer includes Gemini's follow-up-question widgets (`<elicitations>`, `<follow-up>`) in the returned text — these are sometimes nested inside the response body and were previously appended to the end of `response.text`
+- `ChatGPT.get_last_response(get_markdown=True)` no longer raises `ElementClickInterceptedException` when clicking "Copy response" — a same-sized sibling element overlapping the button in ChatGPT's layout failed Selenium's native `.click()` interactability check. The button is now scrolled into view and clicked via `ActionChains`
+
 ## [0.4.3] - 2026-07-01
 
 ### Added

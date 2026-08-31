@@ -1,8 +1,9 @@
 from importlib.metadata import PackageNotFoundError, version
 
 from hermex.chatgpt import ChatGPT
-from hermex.exceptions import LoginRequiredError
+from hermex.exceptions import HeadlessClipboardError, LoginRequiredError
 from hermex.gemini import Gemini
+from hermex.gemini_watermark_remover import remove_gemini_watermark
 from hermex.models import AssistantMessage, State
 from hermex.utils import clear_data
 
@@ -15,8 +16,10 @@ __all__ = [
     "AssistantMessage",
     "State",
     "LoginRequiredError",
+    "HeadlessClipboardError",
     "Gemini",
     "ChatGPT",
+    "remove_gemini_watermark",
     "clear_data",
     "__version__",
 ]

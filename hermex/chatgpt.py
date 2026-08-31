@@ -10,6 +10,7 @@ from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
+from hermex.exceptions import HeadlessClipboardError
 from hermex.models import AssistantMessage, State
 from hermex.scraper_base import Scraper
 
@@ -117,6 +118,13 @@ class ChatGPT(Scraper):
     ) -> AssistantMessage:
         # ChatGPT does not watermark generated images, so remove_watermark is a no-op.
 
+        if get_markdown and self.headless:
+            raise HeadlessClipboardError(
+                "get_markdown=True reads the response via the 'Copy response' "
+                "button and the OS clipboard, which Chrome disables in headless "
+                "mode. Use get_markdown=False, or run with headless=False."
+            )
+
         wait = WebDriverWait(self.driver, 20)
 
         def _get_img(element: WebElement):
@@ -149,9 +157,17 @@ class ChatGPT(Scraper):
                 return None
             if not get_markdown:
                 return inner_text
-            element.find_element(
+            copy_btn = element.find_element(
                 By.CSS_SELECTOR, 'button[aria-label="Copy response"]'
-            ).click()
+            )
+            self.driver.execute_script(
+                "arguments[0].scrollIntoView({block: 'center'});", copy_btn
+            )
+            # ChatGPT's message-action row sometimes overlaps a same-sized sibling
+            # element, which fails WebElement.click()'s interactability check.
+            # Moving the mouse there first and clicking via ActionChains sidesteps
+            # that check (a plain JS .click() doesn't trigger the copy handler).
+            ActionChains(self.driver).move_to_element(copy_btn).click().perform()
             self.sleep(0.5)
             return pyperclip.paste()
 

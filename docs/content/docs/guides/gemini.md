@@ -104,6 +104,9 @@ response = gemini.query(
 print(response.text)  # raw markdown with table syntax
 ```
 
+!!! warning
+    `get_markdown=True` reads the response from the OS clipboard after clicking Gemini's copy button, which does not work in headless mode — Chrome disables clipboard-write when the browser has no visible window. This raises [`HeadlessClipboardError`](../api/exceptions.md) if `headless=True`. Use `get_markdown=False` in headless mode instead.
+
 ## Long messages
 
 For long prompts, character-by-character typing is slow. Use `paste=True` to paste the message instead:
