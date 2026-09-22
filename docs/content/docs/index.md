@@ -17,7 +17,11 @@ description: Drive ChatGPT and Gemini from Python using the free web UI — no A
 </div>
 
 <p align="center">
-  <video src="assets/demo.mp4" controls width="720"></video>
+  <video src="assets/intro.mp4" poster="assets/intro-poster.png" controls preload="metadata" width="720"
+         title="Hermex in sixty seconds"
+         aria-label="Hermex in sixty seconds — what it does, why it exists, and the problems it solves">
+    <track kind="captions" src="assets/intro.en.vtt" srclang="en" label="English" default>
+  </video>
 </p>
 
 ---

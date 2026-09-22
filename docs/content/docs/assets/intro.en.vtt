@@ -1,0 +1,127 @@
+WEBVTT
+
+1
+00:00:00.000 --> 00:00:03.560
+You've got a hundred receipts and you need
+the numbers out of every one.
+
+2
+00:00:03.560 --> 00:00:04.700
+Two ways to do this.
+
+3
+00:00:04.700 --> 00:00:05.980
+Neither is good.
+
+4
+00:00:05.980 --> 00:00:08.020
+Set up a ChatGPT API account,
+
+5
+00:00:08.020 --> 00:00:10.500
+add a card, pay by the token —
+
+6
+00:00:10.500 --> 00:00:11.760
+forty-seven dollars.
+
+7
+00:00:11.760 --> 00:00:14.120
+Or upload them to ChatGPT yourself,
+
+8
+00:00:14.120 --> 00:00:15.140
+one at a time.
+
+9
+00:00:15.140 --> 00:00:17.500
+There goes your afternoon.
+
+10
+00:00:17.720 --> 00:00:19.820
+But what if you could
+automate the web app?
+
+11
+00:00:20.460 --> 00:00:21.540
+That's Hermex.
+
+12
+00:00:21.540 --> 00:00:25.260
+A Python library that drives
+the ChatGPT and Gemini web apps.
+
+13
+00:00:25.260 --> 00:00:27.460
+Not the API — the app itself.
+
+14
+00:00:27.460 --> 00:00:31.080
+It types your prompt into the chat box
+and hands the answer to your script.
+
+15
+00:00:31.080 --> 00:00:32.400
+No API key.
+
+16
+00:00:32.400 --> 00:00:33.480
+No billing.
+
+17
+00:00:33.480 --> 00:00:35.360
+It runs on the account you already use.
+
+18
+00:00:36.420 --> 00:00:38.800
+Ask it a question,
+and get a straight answer.
+
+19
+00:00:38.800 --> 00:00:39.960
+That's one line of code.
+
+20
+00:00:40.480 --> 00:00:42.600
+Send it a PDF and ask for the summary.
+
+21
+00:00:42.600 --> 00:00:43.940
+Also one line.
+
+22
+00:00:43.940 --> 00:00:47.240
+Or point it at a hundred prompts
+and write every image to disk.
+
+23
+00:00:47.240 --> 00:00:48.520
+Still one line.
+
+24
+00:00:48.520 --> 00:00:50.300
+It's free, open source,
+
+25
+00:00:50.300 --> 00:00:52.020
+and one pip install away.
+
+26
+00:00:52.020 --> 00:00:54.460
+No account to make, no key to copy.
+
+27
+00:00:54.460 --> 00:00:55.640
+That's the whole setup.
+
+28
+00:00:55.640 --> 00:00:56.540
+Head to the docs.
+
+29
+00:00:56.540 --> 00:00:57.960
+You'll be running in minutes.
+
+30
+00:00:57.960 --> 00:00:59.071
+Not an afternoon.
