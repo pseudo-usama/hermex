@@ -20,7 +20,7 @@
 </p>
 
 <p align="center">
-  <video src="https://github.com/user-attachments/assets/2bd2196a-89e1-4182-9173-3283c99d0436" controls width="720" title="Hermex in sixty seconds" aria-label="Hermex in sixty seconds: an introduction to driving ChatGPT and Gemini from Python" aria-description="60-second narrated animation introducing Hermex. It explains what the library does, why it exists, and the problems it solves: official ChatGPT and Gemini APIs are billed per token, while the same models are free in the web UI. Hermex drives that web UI from Python — asking a question, attaching files, and returning the reply as a Python object — with no API key."></video>
+  <video src="https://github.com/user-attachments/assets/de8f7a26-7ba1-4c29-bf4d-1a16a8682015" controls width="720" title="Hermex in sixty seconds" aria-label="Hermex in sixty seconds: an introduction to driving ChatGPT and Gemini from Python" aria-description="60-second narrated animation introducing Hermex. It explains what the library does, why it exists, and the problems it solves: official ChatGPT and Gemini APIs are billed per token, while the same models are free in the web UI. Hermex drives that web UI from Python — asking a question, attaching files, and returning the reply as a Python object — with no API key."></video>
 </p>
 
 ---
