@@ -259,11 +259,15 @@ class Gemini(Scraper):
             By.CSS_SELECTOR, '[data-test-id="send-button-container"]'
         )
 
+        # Gemini mounts this container only while the composer holds something or a
+        # response is streaming, and removes it from the DOM otherwise, so its absence
+        # is the idle signal. An attachment counts as content and mounts it too.
         if not containers:
             return State.IDLE
 
-        container = containers[0]
-        button = container.find_element(By.CSS_SELECTOR, "gem-icon-button.send-button")
+        button = containers[0].find_element(
+            By.CSS_SELECTOR, "gem-icon-button.send-button"
+        )
         classes = (button.get_attribute("class") or "").split()
 
         # While generating, the send button is swapped for a stop button (class "stop",
@@ -271,14 +275,12 @@ class Gemini(Scraper):
         if "stop" in classes:
             return State.GENERATING
 
-        # The "has-input" class is added whenever the input box has content. Without it,
-        # the box is empty and the UI is idle.
-        if "has-input" not in classes:
-            return State.IDLE
-
-        # With content, the button is enabled (TYPING) unless an upload is in progress,
-        # in which case it is disabled (aria-disabled="true") until the upload completes.
-        if button.get_attribute("aria-disabled") == "true":
+        # Upload progress shows only on the attachment chip: Gemini leaves the send button
+        # enabled throughout an upload and queues the message rather than blocking it, so
+        # the button itself says nothing about upload progress.
+        if self.driver.find_elements(
+            By.CSS_SELECTOR, ".gem-attachment-content.loading"
+        ):
             return State.UPLOADING
 
         return State.TYPING

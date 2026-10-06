@@ -1,5 +1,11 @@
 # Changelog
 
+## [Unreleased]
+
+### Fixed
+- `Gemini.get_state()` reports `State.UPLOADING` again — it keyed off `aria-disabled="true"` on the send button, but Gemini no longer disables that button while a file uploads. It stays enabled and clicking it queues the message until the upload finishes, so an in-flight upload was reported as `State.TYPING` and `send_message()` could submit before the file had arrived. Upload progress is now read from the attachment chip's loading indicator instead
+- `Gemini.get_state()` no longer checks the send button's `has-input` class — the branch was unreachable, since Gemini removes `[data-test-id="send-button-container"]` from the DOM whenever the composer is empty, and that absence is already treated as `State.IDLE`
+
 ## [0.4.4] - 2026-08-30
 
 ### Added
