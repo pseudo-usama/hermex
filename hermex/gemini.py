@@ -277,9 +277,12 @@ class Gemini(Scraper):
 
         # Upload progress shows only on the attachment chip: Gemini leaves the send button
         # enabled throughout an upload and queues the message rather than blocking it, so
-        # the button itself says nothing about upload progress.
+        # the button itself says nothing about upload progress. Scoped to the composer's
+        # uploader, because already-sent messages render their attachments with the same
+        # component and a still-loading thumbnail there would otherwise read as UPLOADING.
         if self.driver.find_elements(
-            By.CSS_SELECTOR, ".gem-attachment-content.loading"
+            By.CSS_SELECTOR,
+            "uploader-file-preview-container .gem-attachment-content.loading",
         ):
             return State.UPLOADING
 
