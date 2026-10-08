@@ -5,3 +5,4 @@ dist/
 /docs/site
 /docs/.cache
 /.ruff_cache
+.pytest_cache

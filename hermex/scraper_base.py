@@ -292,6 +292,39 @@ class Scraper(ABC):
             get_markdown=get_markdown, remove_watermark=remove_watermark
         )
 
+    def _focus(self, element: WebElement, attempts: int = 3) -> None:
+        """Put the caret in `element`, verifying it actually landed there.
+
+        A plain .click() is not enough on its own. The JS text-insertion paths
+        (`_paste_into`, and the emoji branch of `_type_into`) call
+        `document.execCommand('insertText')`, which writes to `document.activeElement`
+        rather than to a given element — so anything that holds focus receives the
+        message instead of the composer. ChatGPT's writing block is an editable element
+        that can take focus when a response finishes, which makes that a real case rather than a
+        theoretical one, and it fails silently: the composer stays empty, so the submit
+        keystroke lands in the writing block too.
+        """
+        for _ in range(attempts):
+            try:
+                element.click()
+            except WebDriverException:
+                # Something is overlaying it. The JS focus below may still work, so
+                # don't give up until the activeElement check has had its say.
+                pass
+            self.driver.execute_script("arguments[0].focus();", element)
+            if self.driver.execute_script(
+                "const active = document.activeElement;"
+                "return arguments[0] === active || arguments[0].contains(active);",
+                element,
+            ):
+                return
+            self.sleep(0.5)
+
+        raise RuntimeError(
+            "Could not put the caret in the message box — focus kept going elsewhere. "
+            "On ChatGPT this usually means an editable writing block took focus."
+        )
+
     def _type_into(
         self,
         message: str,

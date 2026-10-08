@@ -20,7 +20,7 @@ A browser window will open. Browse around for a moment, then close the window. I
 You only need to do this once. Repeat it if your session expires. To wipe all saved data (browser profile, session cookies) and start fresh, call `hermex.clear_data()` before re-running setup. See [`clear_data`](api/shared-interface.md#data-management) in the API reference.
 
 !!! note
-    ChatGPT works without login for file upload and text queries, but image generation requires a logged-in session. For Gemini, guest mode supports basic text queries — file upload requires a logged-in session.
+    Guest mode supports basic text queries on both ChatGPT and Gemini. File upload needs a logged-in session on either, and image generation needs one on ChatGPT.
 
 ## 2. Send your first query
 
