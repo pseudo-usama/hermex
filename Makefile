@@ -16,7 +16,7 @@ typecheck:
 # Drive the real UIs in a visible browser. Slow, use quota, and can fail for reasons
 # outside the code (rate limits, captcha).
 test-gemini:
-	pytest tests/live/test_gemini.py -v
+	pytest tests/live/test_gemini_logged_in.py tests/live/test_gemini_logged_out.py -v
 
 # Two files because chatgpt.com serves a different frontend signed out. They share one
 # invocation safely: the guest fixture runs on a throwaway profile, not the real one.

@@ -18,7 +18,7 @@ from hermex import ChatGPT, Gemini
 
 @pytest.fixture(scope="session")
 def gemini(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Gemini]:
-    """One logged-in browser session shared by every Gemini test.
+    """One logged-in browser session shared by every logged-in Gemini test.
 
     Downloads go to a pytest temp dir so generated images never land in the repo.
     """
@@ -31,6 +31,20 @@ def gemini(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Gemini]:
         # driver/Chrome version mismatch) after the browser is already up, and a
         # fixture that dies before yielding never runs its teardown otherwise —
         # leaving an orphaned Chrome holding the profile lock for the next run.
+        bot.close()
+
+
+@pytest.fixture(scope="session")
+def gemini_guest(tmp_path_factory: pytest.TempPathFactory) -> Iterator[Gemini]:
+    """One signed-out Gemini session on a fresh profile without Google cookies."""
+    data_dir = tmp_path_factory.mktemp("gemini_guest_profile")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", UserWarning)  # setup() has not been run
+        bot = Gemini(data_dir=data_dir, download_dir=data_dir)
+    try:
+        bot.open_url()
+        yield bot
+    finally:
         bot.close()
 
 

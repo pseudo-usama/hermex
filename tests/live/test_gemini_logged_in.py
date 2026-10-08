@@ -1,15 +1,14 @@
-"""Live Gemini tests. These drive the real gemini.google.com UI.
+"""Live logged-in Gemini tests. These drive the real gemini.google.com UI.
+
+Run with a logged-in profile (see `Gemini.setup()`). Guest tests live separately
+in `test_gemini_logged_out.py` and use a throwaway browser profile.
 
 Tests share a single browser session and therefore a single conversation, so
 order matters: anything that inspects a fresh/idle composer must come first, and
 `test_followup_widget_text_is_stripped` must stay last because it starts a new
 conversation.
-
-Run with a logged-in profile (see `Gemini.setup()`) — `test_detects_logged_in_session`
-and the upload tests fail otherwise.
 """
 
-import warnings
 from pathlib import Path
 
 import cv2
@@ -28,19 +27,6 @@ def test_detects_logged_in_session(gemini: Gemini) -> None:
         "Expected a logged-in profile. Run Gemini.setup() and sign in before "
         "running the live suite."
     )
-
-
-def test_detects_guest_session(tmp_path: Path) -> None:
-    # A fresh data_dir means a fresh Chrome profile with no Google cookies, which
-    # is how we get a guest session without touching the real profile.
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore", UserWarning)  # setup() has not been run
-        guest = Gemini(data_dir=tmp_path, download_dir=tmp_path)
-    try:
-        guest.open_url()
-        assert guest.is_logged_in is False
-    finally:
-        guest.close()
 
 
 def test_fresh_page_is_idle(gemini: Gemini) -> None:
