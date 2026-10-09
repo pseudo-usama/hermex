@@ -23,8 +23,8 @@ class Gemini(Scraper):
     Scraper for Google Gemini (gemini.google.com).
 
     Supports text queries, file uploads, and downloading generated images.
-    Works in guest mode for basic text queries; file upload requires a
-    logged-in session established via `Gemini.setup()`.
+    Works in guest mode for basic text queries; file upload and image
+    generation require a logged-in session established via `Gemini.setup()`.
 
     Generated images are optionally post-processed to remove the Gemini
     watermark via `remove_watermark=True` on `query()` or `get_last_response()`.
@@ -179,6 +179,26 @@ class Gemini(Scraper):
             except WebDriverException:
                 pass
 
+    def _last_turn(self) -> WebElement:
+        """Return the element wrapping the most recent assistant turn."""
+        responses = WebDriverWait(self.driver, 20).until(
+            EC.presence_of_all_elements_located((By.TAG_NAME, "model-response"))
+        )
+        return responses[-1]
+
+    def _follow_up_texts(self, body: WebElement) -> list[str]:
+        """Return the text of each follow-up widget inside a response body."""
+        widgets = body.find_elements(By.CSS_SELECTOR, "elicitations, follow-up")
+        return [t for t in (w.text.strip() for w in widgets) if t]
+
+    def _get_follow_up_suggestions(self) -> list[str]:
+        """Return the follow-up widget text on the last response, empty if none.
+
+        This is the text `get_last_response()` strips out of `.text`.
+        """
+        body = self._last_turn().find_element(By.TAG_NAME, "message-content")
+        return self._follow_up_texts(body)
+
     def get_last_response(
         self, get_markdown: bool = False, remove_watermark: bool = False
     ) -> AssistantMessage:
@@ -204,12 +224,8 @@ class Gemini(Scraper):
 
             # Gemini sometimes nests follow-up-question widgets (<elicitations>,
             # <follow-up>) inside message-content; drop their text from the reading
-            for widget in elem.find_elements(
-                By.CSS_SELECTOR, "elicitations, follow-up"
-            ):
-                widget_text = widget.text.strip()
-                if widget_text:
-                    inner_text = inner_text.replace(widget_text, "").strip()
+            for widget_text in self._follow_up_texts(elem):
+                inner_text = inner_text.replace(widget_text, "").strip()
             if inner_text == "":
                 return None
             if not get_markdown:
@@ -218,11 +234,7 @@ class Gemini(Scraper):
             self.sleep(0.5)
             return pyperclip.paste()
 
-        wait = WebDriverWait(self.driver, 20)
-        responses = wait.until(
-            EC.presence_of_all_elements_located((By.TAG_NAME, "model-response"))
-        )
-        last_response = responses[-1]
+        last_response = self._last_turn()
 
         try:
             text_content = _get_text(last_response, get_markdown)
@@ -247,11 +259,15 @@ class Gemini(Scraper):
             By.CSS_SELECTOR, '[data-test-id="send-button-container"]'
         )
 
+        # Gemini mounts this container only while the composer holds something or a
+        # response is streaming, and removes it from the DOM otherwise, so its absence
+        # is the idle signal. An attachment counts as content and mounts it too.
         if not containers:
             return State.IDLE
 
-        container = containers[0]
-        button = container.find_element(By.CSS_SELECTOR, "gem-icon-button.send-button")
+        button = containers[0].find_element(
+            By.CSS_SELECTOR, "gem-icon-button.send-button"
+        )
         classes = (button.get_attribute("class") or "").split()
 
         # While generating, the send button is swapped for a stop button (class "stop",
@@ -259,14 +275,15 @@ class Gemini(Scraper):
         if "stop" in classes:
             return State.GENERATING
 
-        # The "has-input" class is added whenever the input box has content. Without it,
-        # the box is empty and the UI is idle.
-        if "has-input" not in classes:
-            return State.IDLE
-
-        # With content, the button is enabled (TYPING) unless an upload is in progress,
-        # in which case it is disabled (aria-disabled="true") until the upload completes.
-        if button.get_attribute("aria-disabled") == "true":
+        # Upload progress shows only on the attachment chip: Gemini leaves the send button
+        # enabled throughout an upload and queues the message rather than blocking it, so
+        # the button itself says nothing about upload progress. Scoped to the composer's
+        # uploader, because already-sent messages render their attachments with the same
+        # component and a still-loading thumbnail there would otherwise read as UPLOADING.
+        if self.driver.find_elements(
+            By.CSS_SELECTOR,
+            "uploader-file-preview-container .gem-attachment-content.loading",
+        ):
             return State.UPLOADING
 
         return State.TYPING

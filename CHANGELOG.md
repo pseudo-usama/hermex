@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.4.5] - 2026-10-09
+
+### Changed
+- `ChatGPT._upload_files()` raises `LoginRequiredError` when signed out, matching `Gemini`. OpenAI gates the attach menu behind a login there and the guest file inputs accept images only, so the previous behavior could not work regardless of selectors. The guest session supports text queries only; the docs previously claimed file upload worked without login
+- Docs now state that `Gemini` image generation requires a logged-in session. The docs, README and landing page previously listed it as working in guest mode, but signed-out Gemini does not generate images
+
+### Fixed
+- `ChatGPT.send_message()` no longer types into the writing block. The composer was located as `div[contenteditable="true"]`, but ChatGPT's writing block is an editable element matching that same selector and rendering ahead of the composer, so with a writing block open `find_element` returned the writing block and the message was typed into it rather than sent — silently, since the composer stayed empty and the submit keystroke went to the writing block too. The composer is now matched by id (`div#prompt-textarea`). The new `Scraper._focus()` additionally clicks, calls `.focus()`, and verifies `document.activeElement` before any text is written, which guards `_paste_into()` and the emoji branch of `_type_into()` — both insert through `document.execCommand`, so they write to whatever holds focus rather than to a given element
+- `ChatGPT` works signed out again. OpenAI now serves logged-out visitors a different frontend (its composer form posts to `/unauth-mweb/conversation`), not a restyled version of the authed one, and every selector missed it. `open_url()` raised `TimeoutException` because `wait_for_page_load()` waited for the authed `div[contenteditable="true"]` composer, which that build does not have — and since the wait came first, `_detect_login()` never ran either. `ChatGPT` now detects which composer is mounted and branches on it in `wait_for_page_load()`, `_detect_login()`, `send_message()`, `get_last_response()` and `get_state()`
+- `ChatGPT.get_state()` no longer reports `State.IDLE` for everything while signed out. That build has neither `[data-testid="stop-button"]` nor `[data-testid="send-button"]`, so every call fell through to the final `return State.IDLE` — `wait_until_idle()` returned immediately and `get_last_response()` read a half-written response. State is now read from the one always-mounted `button[data-composer-submit]`, which swaps the icon inside it rather than being replaced: an un-hidden loading or stop icon is `State.GENERATING`, `aria-disabled="true"` is `State.IDLE`, anything else is `State.TYPING`
+- `ChatGPT.send_message()` submits correctly while signed out — the guest composer is a `<textarea>`, where Enter inserts a newline instead of submitting, so the message was typed and then silently never sent. It now clicks the composer's own submit button in that build
+- `ChatGPT._upload_files()` finds the file input again — it was renamed `#upload-photos` → `#upload-files`. The selector now matches either
+- `Gemini.get_state()` reports `State.UPLOADING` again — it keyed off `aria-disabled="true"` on the send button, but Gemini no longer disables that button while a file uploads. It stays enabled and clicking it queues the message until the upload finishes, so an in-flight upload was reported as `State.TYPING` and `send_message()` could submit before the file had arrived. Upload progress is now read from the attachment chip's loading indicator instead
+- `Gemini.get_state()` no longer checks the send button's `has-input` class — the branch was unreachable, since Gemini removes `[data-test-id="send-button-container"]` from the DOM whenever the composer is empty, and that absence is already treated as `State.IDLE`
+
 ## [0.4.4] - 2026-08-30
 
 ### Added

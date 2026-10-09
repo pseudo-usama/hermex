@@ -7,7 +7,7 @@ Thanks for your interest in improving Hermex. Contributions are welcome — plea
 ```bash
 git clone https://github.com/pseudo-usama/hermex
 cd hermex
-pip install -e .
+pip install -e ".[dev]"
 ```
 
 Requires Python 3.11+ and Google Chrome 130+.
@@ -18,7 +18,15 @@ Before pushing, format and lint:
 make fmt
 ```
 
-There is no test suite — Hermex drives real browsers against live web UIs, so behavior is verified by running the scrapers manually.
+Run the test suite for the platform you changed:
+
+```bash
+make test-gemini
+make test-chatgpt
+make test-live    # both
+```
+
+The tests live in `tests/live/` and drive the real ChatGPT and Gemini sites in a visible browser, with one logged-in and one logged-out file per platform. They are slow, use quota, and need a logged-in profile from `setup()`, so they run manually rather than in CI. Use the make targets rather than `pytest tests/live/`: the two logged-in suites share one Chrome profile and can't run in the same pytest invocation.
 
 ## Reporting bugs
 

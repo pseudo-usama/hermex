@@ -151,7 +151,8 @@ class Scraper(ABC):
         """
         Open a URL in the browser and wait for the page to be ready.
 
-        :param url: URL to navigate to.
+        :param url: URL to navigate to. Defaults to the platform's home page
+            (gemini.google.com or chatgpt.com).
         :param timeout: Maximum seconds to wait for the page to be ready before raising
             TimeoutException.
         """
@@ -193,7 +194,7 @@ class Scraper(ABC):
         :param fake_typing: When paste=True, type dummy text first to avoid bot detection,
                             then replace it with the real message.
         :param typing_delay: Seconds between each keystroke. Overrides the instance-level default.
-        :param submit: Whether to press Enter after composing the message.
+        :param submit: Whether to submit the message after composing it.
         """
 
     @abstractmethod
@@ -214,6 +215,7 @@ class Scraper(ABC):
         Return the current state of the chatbot UI.
 
         Possible states:
+
         - State.IDLE: the interface is ready and waiting for input.
         - State.TYPING: the input box has content that has not been submitted yet.
         - State.UPLOADING: a file upload is in progress.
@@ -290,6 +292,39 @@ class Scraper(ABC):
         self.wait_until_idle(timeout)
         return self.get_last_response(
             get_markdown=get_markdown, remove_watermark=remove_watermark
+        )
+
+    def _focus(self, element: WebElement, attempts: int = 3) -> None:
+        """Put the caret in `element`, verifying it actually landed there.
+
+        A plain .click() is not enough on its own. The JS text-insertion paths
+        (`_paste_into`, and the emoji branch of `_type_into`) call
+        `document.execCommand('insertText')`, which writes to `document.activeElement`
+        rather than to a given element — so anything that holds focus receives the
+        message instead of the composer. ChatGPT's writing block is an editable element
+        that can take focus when a response finishes, which makes that a real case rather than a
+        theoretical one, and it fails silently: the composer stays empty, so the submit
+        keystroke lands in the writing block too.
+        """
+        for _ in range(attempts):
+            try:
+                element.click()
+            except WebDriverException:
+                # Something is overlaying it. The JS focus below may still work, so
+                # don't give up until the activeElement check has had its say.
+                pass
+            self.driver.execute_script("arguments[0].focus();", element)
+            if self.driver.execute_script(
+                "const active = document.activeElement;"
+                "return arguments[0] === active || arguments[0].contains(active);",
+                element,
+            ):
+                return
+            self.sleep(0.5)
+
+        raise RuntimeError(
+            "Could not put the caret in the message box — focus kept going elsewhere. "
+            "On ChatGPT this usually means an editable writing block took focus."
         )
 
     def _type_into(
@@ -419,13 +454,10 @@ class Scraper(ABC):
         during this session. Hermex will reuse the saved session in all future
         runs — repeat setup only if your session expires.
 
-        Close the browser window when done.
+        Close the browser window when done. Usage: ``Gemini.setup()``.
 
         :param data_dir: Must match the data_dir you pass to the constructor. Defaults
             to the platform-appropriate data directory.
-
-        Usage:
-            Gemini.setup()
         """
         if data_dir is None:
             data_dir = _default_data_dir

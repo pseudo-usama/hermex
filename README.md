@@ -58,7 +58,7 @@ Gemini.setup()  # opens a browser — log in, browse briefly, then close the win
 
 After setup, all future runs reuse the saved session automatically. Repeat this if your session expires.
 
-Guest mode (no login) works for basic text queries on Gemini but file upload requires a logged-in session. ChatGPT works without login for text queries and file upload, but image generation requires a logged-in session.
+Guest mode (no login) works for basic text queries on both Gemini and ChatGPT. Everything beyond that needs a logged-in session: file upload and image generation on both. Passing `attachments` without a session raises `LoginRequiredError` on both.
 
 ## Usage
 
@@ -144,6 +144,7 @@ Both `Gemini` and `ChatGPT` share the same interface — all methods below apply
 | `short_wait()` | Sleep ~7 seconds |
 | `long_wait()` | Sleep ~5 minutes |
 | `refresh_page()` | Reload the current page |
+| `get_current_url(only_base)` | Return the current browser URL |
 | `close()` | Close the browser |
 | `setup()` | One-time login setup (class method) |
 
@@ -158,6 +159,7 @@ Gemini(
     headless=False,
     typing_delay=0.025,       # seconds between keystrokes
     disable_web_security=True,
+    data_dir=None,            # defaults to the platform data directory
 )
 # ChatGPT accepts the same parameters
 ```

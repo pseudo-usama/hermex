@@ -15,12 +15,12 @@ Gemini.setup()   # for Gemini
 ChatGPT.setup()  # for ChatGPT
 ```
 
-A browser window will open. Browse around for a moment, then close the window. If you need features that require login (e.g. file upload on Gemini), log in during this session — Hermex will reuse the saved session in all future runs.
+A browser window will open. Browse around for a moment, then close the window. If you need features that require login (file upload or image generation), log in during this session — Hermex will reuse the saved session in all future runs.
 
 You only need to do this once. Repeat it if your session expires. To wipe all saved data (browser profile, session cookies) and start fresh, call `hermex.clear_data()` before re-running setup. See [`clear_data`](api/shared-interface.md#data-management) in the API reference.
 
 !!! note
-    ChatGPT works without login for file upload and text queries, but image generation requires a logged-in session. For Gemini, guest mode supports basic text queries — file upload requires a logged-in session.
+    Guest mode supports basic text queries on both ChatGPT and Gemini. File upload and image generation need a logged-in session on both.
 
 ## 2. Send your first query
 
@@ -68,11 +68,18 @@ chatgpt.close()
 
 ## 5. Get a generated image
 
-When the response includes a generated image, Hermex downloads it automatically:
+Image generation needs a logged-in session. When the response includes a generated image, Hermex downloads it automatically:
 
 ```python
+from hermex import Gemini
+
+gemini = Gemini()
+gemini.open_url()
+
 response = gemini.query("Generate an image of a mountain at sunset.")
 print(response.image)  # Path to the downloaded file
+
+gemini.close()
 ```
 
 ## Next steps

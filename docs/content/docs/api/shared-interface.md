@@ -18,7 +18,7 @@ Both scrapers accept the same constructor arguments. Pass these when instantiati
 
 ## First-time setup
 
-Run `setup()` once per machine before using Hermex for the first time. It builds a persistent browser profile that significantly reduces bot detection risk. If you need login-gated features (e.g. file upload on Gemini), log in during this session.
+Run `setup()` once per machine before using Hermex for the first time. It builds a persistent browser profile that significantly reduces bot detection risk. If you need login-gated features (e.g. file upload), log in during this session.
 
 ::: hermex.scraper_base.Scraper.setup
 
