@@ -10,7 +10,7 @@ description: API reference for the ChatGPT scraper — supported attachments, lo
 
 ## Login
 
-ChatGPT works without login for text queries only. Signed out, chatgpt.com serves a reduced site that gates both file upload and image generation behind a login — `_upload_files()` raises `LoginRequiredError` there, and image prompts come back as a prompt to log in. Run `ChatGPT.setup()` and log in to enable both. Setup is also recommended regardless for bot detection, as it builds a persistent browser profile.
+ChatGPT works without login for text queries only. Signed out, chatgpt.com serves a reduced site that gates both file upload and image generation behind a login — passing `attachments` raises [`LoginRequiredError`](exceptions.md) there, and image prompts come back as a prompt to log in. Run `ChatGPT.setup()` and log in to enable both. Setup is also recommended regardless for bot detection, as it builds a persistent browser profile.
 
 ---
 

@@ -37,8 +37,8 @@ class ChatGPT(Scraper):
 
     Only text queries work without login. OpenAI gates file upload and image
     generation behind a login on the signed-out site, so both require a session
-    established via `ChatGPT.setup()`; `_upload_files()` raises
-    `LoginRequiredError` in guest mode.
+    established via `ChatGPT.setup()`. Passing `attachments` in guest mode
+    raises `LoginRequiredError`.
     """
 
     SUPPORTED_ATTACHMENTS = { ".png", ".jpg", ".jpeg", ".gif", ".webp", ".pdf", ".csv", ".txt", ".json" }  # fmt: skip

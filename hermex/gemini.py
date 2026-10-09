@@ -23,8 +23,8 @@ class Gemini(Scraper):
     Scraper for Google Gemini (gemini.google.com).
 
     Supports text queries, file uploads, and downloading generated images.
-    Works in guest mode for basic text queries; file upload requires a
-    logged-in session established via `Gemini.setup()`.
+    Works in guest mode for basic text queries; file upload and image
+    generation require a logged-in session established via `Gemini.setup()`.
 
     Generated images are optionally post-processed to remove the Gemini
     watermark via `remove_watermark=True` on `query()` or `get_last_response()`.

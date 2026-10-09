@@ -14,7 +14,7 @@ from hermex import Gemini
 Gemini.setup()
 ```
 
-Browse around briefly, log in to your Google account if you want image upload support, then close the window.
+Browse around briefly, log in to your Google account if you want file upload or image generation, then close the window.
 
 ## Guest mode vs logged-in mode
 
@@ -24,9 +24,9 @@ Gemini supports two modes:
 |---|---|---|
 | Text queries | ✓ | ✓ |
 | File upload | ✗ | ✓ |
-| Image generation | ✓ | ✓ |
+| Image generation | ✗ | ✓ |
 
-If you try to upload files without being logged in, Hermex raises a `LoginRequiredError`.
+If you try to upload files without being logged in, Hermex raises a `LoginRequiredError`. If you ask for an image without being logged in, Gemini will not produce one — no error is raised, the response will simply contain text instead.
 
 ## Basic text query
 
@@ -65,7 +65,7 @@ response = gemini.query(
 
 ## Getting generated images
 
-When Gemini generates an image, Hermex downloads it automatically and returns the path:
+Image generation requires a logged-in session. When Gemini generates an image, Hermex downloads it automatically and returns the path:
 
 ```python
 response = gemini.query("Generate an image of a futuristic city at night.")

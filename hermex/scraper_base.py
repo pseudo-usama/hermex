@@ -151,7 +151,8 @@ class Scraper(ABC):
         """
         Open a URL in the browser and wait for the page to be ready.
 
-        :param url: URL to navigate to.
+        :param url: URL to navigate to. Defaults to the platform's home page
+            (gemini.google.com or chatgpt.com).
         :param timeout: Maximum seconds to wait for the page to be ready before raising
             TimeoutException.
         """
@@ -193,7 +194,7 @@ class Scraper(ABC):
         :param fake_typing: When paste=True, type dummy text first to avoid bot detection,
                             then replace it with the real message.
         :param typing_delay: Seconds between each keystroke. Overrides the instance-level default.
-        :param submit: Whether to press Enter after composing the message.
+        :param submit: Whether to submit the message after composing it.
         """
 
     @abstractmethod
@@ -214,6 +215,7 @@ class Scraper(ABC):
         Return the current state of the chatbot UI.
 
         Possible states:
+
         - State.IDLE: the interface is ready and waiting for input.
         - State.TYPING: the input box has content that has not been submitted yet.
         - State.UPLOADING: a file upload is in progress.
@@ -452,13 +454,10 @@ class Scraper(ABC):
         during this session. Hermex will reuse the saved session in all future
         runs — repeat setup only if your session expires.
 
-        Close the browser window when done.
+        Close the browser window when done. Usage: ``Gemini.setup()``.
 
         :param data_dir: Must match the data_dir you pass to the constructor. Defaults
             to the platform-appropriate data directory.
-
-        Usage:
-            Gemini.setup()
         """
         if data_dir is None:
             data_dir = _default_data_dir

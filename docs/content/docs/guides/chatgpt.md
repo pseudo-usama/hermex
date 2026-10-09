@@ -14,17 +14,17 @@ from hermex import ChatGPT
 ChatGPT.setup()
 ```
 
-Browse around briefly, then close the window. Login is optional for text queries and file upload, but image generation requires a logged-in session — log in during setup if you need it.
+Browse around briefly, then close the window. Login is optional for text queries, but file upload and image generation both require a logged-in session — log in during setup if you need them.
 
 ## Without login vs logged in
 
 | Feature | Without login | Logged in |
 |---|---|---|
 | Text queries | ✓ | ✓ |
-| File upload | ✓ | ✓ |
+| File upload | ✗ | ✓ |
 | Image generation | ✗ | ✓ |
 
-If you try to generate an image without being logged in, ChatGPT will not produce one — no error is raised, the response will simply contain text instead.
+Attaching files without being logged in raises a [`LoginRequiredError`](../api/exceptions.md). If you try to generate an image without being logged in, ChatGPT will not produce one — no error is raised, the response will simply contain text instead.
 
 ## Basic text query
 
@@ -42,7 +42,7 @@ chatgpt.close()
 
 ## Attaching files
 
-ChatGPT supports file upload without requiring a logged-in session. Supported formats: `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.pdf`, `.csv`, `.txt`, `.json`. You can also check `ChatGPT.SUPPORTED_ATTACHMENTS` at runtime.
+File upload requires a logged-in session. Supported formats: `.jpg`, `.jpeg`, `.png`, `.gif`, `.webp`, `.pdf`, `.csv`, `.txt`, `.json`. You can also check `ChatGPT.SUPPORTED_ATTACHMENTS` at runtime.
 
 ```python
 response = chatgpt.query(

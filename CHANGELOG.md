@@ -4,6 +4,7 @@
 
 ### Changed
 - `ChatGPT._upload_files()` raises `LoginRequiredError` when signed out, matching `Gemini`. OpenAI gates the attach menu behind a login there and the guest file inputs accept images only, so the previous behavior could not work regardless of selectors. The guest session supports text queries only; the docs previously claimed file upload worked without login
+- Docs now state that `Gemini` image generation requires a logged-in session. The docs, README and landing page previously listed it as working in guest mode, but signed-out Gemini does not generate images
 
 ### Fixed
 - `ChatGPT.send_message()` no longer types into the writing block. The composer was located as `div[contenteditable="true"]`, but ChatGPT's writing block is an editable element matching that same selector and rendering ahead of the composer, so with a writing block open `find_element` returned the writing block and the message was typed into it rather than sent — silently, since the composer stayed empty and the submit keystroke went to the writing block too. The composer is now matched by id (`div#prompt-textarea`). The new `Scraper._focus()` additionally clicks, calls `.focus()`, and verifies `document.activeElement` before any text is written, which guards `_paste_into()` and the emoji branch of `_type_into()` — both insert through `document.execCommand`, so they write to whatever holds focus rather than to a given element

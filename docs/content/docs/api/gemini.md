@@ -16,10 +16,11 @@ Gemini works in two modes depending on whether you are logged in:
 |---|---|---|
 | Text queries | ✓ | ✓ |
 | File upload | ✗ | ✓ |
-| Image generation | ✓ | ✓ |
-| Watermark removal | ✓ | ✓ |
+| Image generation | ✗ | ✓ |
 
-Attempting file upload without a logged-in session raises [`LoginRequiredError`](exceptions.md). Run `Gemini.setup()` and log in to enable it.
+Attempting file upload without a logged-in session raises [`LoginRequiredError`](exceptions.md). Image prompts sent signed out don't produce an image — no error is raised, the response simply contains text. Run `Gemini.setup()` and log in to enable both.
+
+`remove_gemini_watermark()` works on any image file and needs no session.
 
 ---
 
