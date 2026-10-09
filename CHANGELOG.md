@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased]
+## [0.4.5] - 2026-10-09
 
 ### Changed
 - `ChatGPT._upload_files()` raises `LoginRequiredError` when signed out, matching `Gemini`. OpenAI gates the attach menu behind a login there and the guest file inputs accept images only, so the previous behavior could not work regardless of selectors. The guest session supports text queries only; the docs previously claimed file upload worked without login
