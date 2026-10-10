@@ -20,11 +20,16 @@ from hermex.scraper_base import Scraper
 # ProseMirror div, so which one is mounted decides every other selector below — and it
 # is also the most reliable way to tell the two sessions apart.
 #
-# The authed composer is matched by id, not by contenteditable alone: ChatGPT's writing
-# block is an editable element that is *also* a div[contenteditable="true"], and it
-# renders ahead of the composer in the DOM, so the looser selector resolved to the
-# writing block whenever one was open and the message was typed into it instead of sent.
-_AUTHED_INPUT = 'div#prompt-textarea[contenteditable="true"]'
+# The authed composer is scoped to its form, not matched by contenteditable alone:
+# ChatGPT's writing block is an editable element that is *also* a
+# div[contenteditable="true"], and it renders ahead of the composer in the DOM, so the
+# looser selector resolved to the writing block whenever one was open and the message
+# was typed into it instead of sent. Scoping by form rather than by the element's own
+# attributes is deliberate — the composer div has been through `id="prompt-textarea"`
+# and now carries only `data-composer-markdown`, while the writing block sits outside
+# the composer form either way. If this hook is renamed in turn, open_url() fails at
+# wait_for_page_load(), which is loud; matching the writing block by accident is silent.
+_AUTHED_INPUT = 'form[data-chatgpt-composer] div[contenteditable="true"]'
 _GUEST_INPUT = "textarea#mobile-composer-prompt"
 _GUEST_SUBMIT = "button[data-composer-submit]"
 
@@ -271,24 +276,49 @@ class ChatGPT(Scraper):
         if self._is_guest_composer():
             return self._guest_state()
 
-        if self.driver.find_elements(By.CSS_SELECTOR, '[data-testid="stop-button"]'):
-            return State.GENERATING
+        # ChatGPT dropped [data-testid="send-button"] and [data-testid="stop-button"],
+        # which left this returning IDLE unconditionally. The composer's trailing slot
+        # now holds one of three buttons and nothing but the aria-label names them, so
+        # the state is read from structure instead — a label check would break in every
+        # locale but English.
+        forms = self.driver.find_elements(
+            By.CSS_SELECTOR, "form[data-chatgpt-composer]"
+        )
+        if not forms:
+            # get_state() is documented as raising when the DOM isn't what we expect,
+            # and _wait_until_state() already tolerates transient failures for 20s.
+            # Returning IDLE here instead would mean a slow page load reads as "done".
+            raise NoSuchElementException("ChatGPT composer form not found.")
+        form = forms[0]
 
+        # Unverified since the testid rewrite, but kept: it costs one lookup and an
+        # extra GENERATING signal only ever errs toward waiting longer.
         if self.driver.find_elements(
             By.CSS_SELECTOR, '[data-testid="image-gen-loading-state"]'
         ):
             return State.GENERATING
 
-        try:
-            send_btn = self.driver.find_element(
-                By.CSS_SELECTOR, '[data-testid="send-button"]'
-            )
-        except NoSuchElementException:
-            return State.IDLE
+        # Composing is the only state whose trailing button is a submit button.
+        submit = form.find_elements(By.CSS_SELECTOR, 'button[type="submit"]')
+        if submit:
+            if submit[0].get_attribute("disabled"):
+                return State.UPLOADING
+            return State.TYPING
 
-        if send_btn.get_attribute("disabled"):
-            return State.UPLOADING
-        return State.TYPING
+        # Idle is the only state showing the voice button, and the only one where
+        # dictation is enabled — ChatGPT disables it while a response streams. Both are
+        # required, so a signal that moves errs toward GENERATING: wait_until_idle()
+        # then waits too long and eventually raises, instead of returning early onto a
+        # response that is still being written.
+        shows_voice = form.find_elements(
+            By.CSS_SELECTOR, 'button:has(use[href*="voice-regular"])'
+        )
+        dictation_off = form.find_elements(
+            By.CSS_SELECTOR, 'button[disabled]:has(use[href*="microphone-"])'
+        )
+        if shows_voice and not dictation_off:
+            return State.IDLE
+        return State.GENERATING
 
     def _guest_state(self) -> State:
         """Read the state off the signed-out composer's submit button.
